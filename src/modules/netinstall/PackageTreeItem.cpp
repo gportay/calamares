@@ -96,7 +96,7 @@ PackageTreeItem::data( int column ) const
     switch ( column )  // group
     {
     case 0:
-        return QVariant( prettyName() );
+        return QVariant( name() );
     case 1:
         return QVariant( description() );
     default:
@@ -104,19 +104,12 @@ PackageTreeItem::data( int column ) const
     }
 }
 
-void
-PackageTreeItem::setHidden( bool isHidden )
-{
-    // TODO: remove this
-    m_isHidden = isHidden;
-}
-
 bool
 PackageTreeItem::hiddenSelected() const
 {
     if ( !isHidden() )
     {
-        cError() << "Non-hidden package item" << prettyName() << packageName() << "for hiddenSelected()";
+        cError() << "Non-hidden package item" << name() << packageName() << "for hiddenSelected()";
     }
 
     if ( !isSelected() )
@@ -138,12 +131,6 @@ PackageTreeItem::hiddenSelected() const
     return isSelected();
 }
 
-
-void
-PackageTreeItem::setCritical( bool isCritical )
-{
-    m_isCritical = isCritical;
-}
 
 void
 PackageTreeItem::setSelected( Qt::CheckState isSelected )

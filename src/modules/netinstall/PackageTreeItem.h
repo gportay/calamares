@@ -24,6 +24,19 @@
 #include <QStandardItem>
 #include <QVariant>
 
+/** @brief A single package, or a group of packages
+ *
+ * Packages are represented as a tree. The leaves are single
+ * packages, for which packageName() is meaningful. Interior
+ * nodes represent groups of packages. A group can be critical
+ * (installed as one package-manager invocation) or non-critical
+ * (packages installed one-by-one; this is slower but more
+ * resilient to failure).
+ *
+ * Groups may be hidden. A hidden group may nonetheless be
+ * selected, which can be used for indivisible grouped package installs.
+ * See README.md for details.
+ */
 class PackageTreeItem : public QStandardItem
 {
 public:
@@ -44,20 +57,30 @@ public:
     PackageTreeItem* parentItem() { return m_parentItem; }
     const PackageTreeItem* parentItem() const { return m_parentItem; }
 
-    QString prettyName() const
-    {
-        return m_name;  // Not sure why pretty
-    }
+    ///@brief The short human-visible name of the package
+    QString name() const { return m_name; }
+    ///@brief The longer human-visible description
     QString description() const { return m_description; }
+    ///@brief The package to install for this item
     QString packageName() const { return m_packageName; }
 
+    /** @brief Pre- and post-scripts for item groups.
+     *
+     * A (sub)group of packages can have a script that is run
+     * before installing that group (or after). See the
+     * *packages* module for details.
+     */
     bool hasScript() const { return !m_preScript.isEmpty() || !m_postScript.isEmpty(); }
     QString preScript() const { return m_preScript; }
     QString postScript() const { return m_postScript; }
 
-    bool isHidden() const { return m_isHidden; }
-    void setHidden( bool isHidden );  // TODO: remove this
+    bool isCritical() const { return m_isCritical; }
 
+    Qt::CheckState isSelected() const { return m_selected; }
+    void setSelected( Qt::CheckState isSelected );
+    void setChildrenSelected( Qt::CheckState isSelected );
+
+    bool isHidden() const { return m_isHidden; }
     /**
      * @brief Is this hidden item, considered "selected"?
      *
@@ -67,12 +90,7 @@ public:
      */
     bool hiddenSelected() const;
 
-    bool isCritical() const { return m_isCritical; }
-    void setCritical( bool isCritical );  // TODO: remove this
-
-    Qt::CheckState isSelected() const { return m_selected; }
-    void setSelected( Qt::CheckState isSelected );
-    void setChildrenSelected( Qt::CheckState isSelected );
+    ///@brief For QStandardItem
     int type() const override;
 
     /** @brief Turns this item into a variant for PackageOperations use
