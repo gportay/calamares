@@ -127,7 +127,7 @@ NetInstallViewStep::onActivate()
 void
 NetInstallViewStep::onLeave()
 {
-    PackageModel::PackageItemDataList packages = m_widget->selectedPackages();
+    PackageTreeItem::List packages = m_widget->selectedPackages();
     cDebug() << "Netinstall: Processing" << packages.length() << "packages.";
 
     static const char PACKAGEOP[] = "packageOperations";
@@ -156,15 +156,15 @@ NetInstallViewStep::onLeave()
     QVariantList installPackages;
     QVariantList tryInstallPackages;
 
-    for ( const auto& package : packages )
+    for ( const auto* package : packages )
     {
-        if ( package.isCritical )
+        if ( package->isCritical() )
         {
-            installPackages.append( package.toOperation() );
+            installPackages.append( package->toOperation() );
         }
         else
         {
-            tryInstallPackages.append( package.toOperation() );
+            tryInstallPackages.append( package->toOperation() );
         }
     }
 
@@ -175,6 +175,7 @@ NetInstallViewStep::onLeave()
         op.insert( "source", moduleInstanceKey().toString() );
         packageOperations.append( op );
         cDebug() << Logger::SubEntry << installPackages.length() << "critical packages.";
+        cDebug() << Logger::SubEntry << installPackages;
     }
     if ( !tryInstallPackages.empty() )
     {
@@ -183,6 +184,7 @@ NetInstallViewStep::onLeave()
         op.insert( "source", moduleInstanceKey().toString() );
         packageOperations.append( op );
         cDebug() << Logger::SubEntry << tryInstallPackages.length() << "non-critical packages.";
+        cDebug() << Logger::SubEntry << tryInstallPackages;
     }
 
     if ( !packageOperations.isEmpty() )

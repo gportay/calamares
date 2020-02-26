@@ -21,55 +21,32 @@
 
 #include "utils/Logger.h"
 
-QVariant
-PackageTreeItem::ItemData::toOperation() const
-{
-    // If it's a package with a pre- or post-script, replace
-    // with the more complicated datastructure.
-    if ( !preScript.isEmpty() || !postScript.isEmpty() )
-    {
-        QMap< QString, QVariant > sdetails;
-        sdetails.insert( "pre-script", preScript );
-        sdetails.insert( "package", packageName );
-        sdetails.insert( "post-script", postScript );
-        return sdetails;
-    }
-    else
-    {
-        return packageName;
-    }
-}
-
+#if 0
 PackageTreeItem::PackageTreeItem( const ItemData& data, PackageTreeItem* parent )
     : m_parentItem( parent )
     , m_data( data )
 {
 }
+#endif
 
-PackageTreeItem::PackageTreeItem( const QString packageName, PackageTreeItem* parent )
+PackageTreeItem::PackageTreeItem( const QString& packageName, PackageTreeItem* parent )
     : m_parentItem( parent )
+    , m_packageName( packageName )
+    , m_selected( parent ? parent->isSelected() : Qt::Unchecked )
 {
-    m_data.packageName = packageName;
-    if ( parent != nullptr )
-    {
-        m_data.selected = parent->isSelected();
-    }
-    else
-    {
-        m_data.selected = Qt::Unchecked;
-    }
 }
 
 PackageTreeItem::PackageTreeItem( PackageTreeItem* parent )
-    : m_parentItem( parent )
+    : PackageTreeItem( QString(), parent )
 {
 }
 
 PackageTreeItem::PackageTreeItem::PackageTreeItem()
-    : PackageTreeItem( QString(), nullptr )
+    : m_parentItem( nullptr )
+    , m_name( QStringLiteral( "<root>" ) )
+    , m_selected( Qt::Checked )
+
 {
-    m_data.selected = Qt::Checked;
-    m_data.name = QLatin1String( "<root>" );
 }
 
 PackageTreeItem::~PackageTreeItem()
@@ -127,66 +104,22 @@ PackageTreeItem::data( int column ) const
     }
 }
 
-PackageTreeItem*
-PackageTreeItem::parentItem()
-{
-    return m_parentItem;
-}
-
-const PackageTreeItem*
-PackageTreeItem::parentItem() const
-{
-    return m_parentItem;
-}
-
-
-QString
-PackageTreeItem::prettyName() const
-{
-    return m_data.name;
-}
-
-QString
-PackageTreeItem::description() const
-{
-    return m_data.description;
-}
-
-QString
-PackageTreeItem::preScript() const
-{
-    return m_data.preScript;
-}
-
-QString
-PackageTreeItem::packageName() const
-{
-    return m_data.packageName;
-}
-
-QString
-PackageTreeItem::postScript() const
-{
-    return m_data.postScript;
-}
-
-bool
-PackageTreeItem::isHidden() const
-{
-    return m_data.isHidden;
-}
-
 void
 PackageTreeItem::setHidden( bool isHidden )
 {
-    m_data.isHidden = isHidden;
+    // TODO: remove this
+    m_isHidden = isHidden;
 }
 
 bool
 PackageTreeItem::hiddenSelected() const
 {
-    Q_ASSERT( m_data.isHidden );
-    if ( !m_data.selected )
+    if ( !isHidden() )
+    {
+        cError() << "Non-hidden package item" << prettyName() << packageName() << "for hiddenSelected()";
+    }
+
+    if ( !isSelected() )
     {
         return false;
     }
@@ -201,27 +134,15 @@ PackageTreeItem::hiddenSelected() const
         currentItem = currentItem->parentItem();
     }
 
-    /* Has no non-hiddent parents */
-    return m_data.selected;
+    /* Has no non-hidden parents */
+    return isSelected();
 }
 
-
-bool
-PackageTreeItem::isCritical() const
-{
-    return m_data.isCritical;
-}
 
 void
 PackageTreeItem::setCritical( bool isCritical )
 {
-    m_data.isCritical = isCritical;
-}
-
-Qt::CheckState
-PackageTreeItem::isSelected() const
-{
-    return m_data.selected;
+    m_isCritical = isCritical;
 }
 
 void
@@ -233,7 +154,7 @@ PackageTreeItem::setSelected( Qt::CheckState isSelected )
         return;
     }
 
-    m_data.selected = isSelected;
+    m_selected = isSelected;
     setChildrenSelected( isSelected );
 
     // Look for suitable parent item which may change checked-state
@@ -282,9 +203,9 @@ PackageTreeItem::setChildrenSelected( Qt::CheckState isSelected )
 {
     if ( isSelected != Qt::PartiallyChecked )
         // Children are never root; don't need to use setSelected on them.
-        for ( auto child : m_childItems )
+        for ( auto* child : m_childItems )
         {
-            child->m_data.selected = isSelected;
+            child->m_selected = isSelected;
             child->setChildrenSelected( isSelected );
         }
 }
@@ -293,4 +214,23 @@ int
 PackageTreeItem::type() const
 {
     return QStandardItem::UserType;
+}
+
+QVariant
+PackageTreeItem::toOperation() const
+{
+    // If it's a package with a pre- or post-script, replace
+    // with the more complicated datastructure.
+    if ( hasScript() )
+    {
+        QMap< QString, QVariant > sdetails;
+        sdetails.insert( "pre-script", m_preScript );
+        sdetails.insert( "package", m_packageName );
+        sdetails.insert( "post-script", m_postScript );
+        return sdetails;
+    }
+    else
+    {
+        return m_packageName;
+    }
 }

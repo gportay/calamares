@@ -181,16 +181,20 @@ PackageModel::headerData( int section, Qt::Orientation orientation, int role ) c
     return QVariant();
 }
 
-QList< PackageTreeItem::ItemData >
+PackageTreeItem::List
 PackageModel::getPackages() const
 {
-    QList< PackageTreeItem* > items = getItemPackages( m_rootItem );
+    PackageTreeItem::List items = getItemPackages( m_rootItem );
     for ( auto package : m_hiddenItems )
+    {
         if ( package->hiddenSelected() )
         {
             items.append( getItemPackages( package ) );
         }
-    QList< PackageTreeItem::ItemData > packages;
+    }
+    // TODO: figure out what this is doing
+#if 0
+    PackageTreeItem::List packages;
     for ( auto item : items )
     {
         PackageTreeItem::ItemData itemData;
@@ -201,12 +205,15 @@ PackageModel::getPackages() const
         packages.append( itemData );
     }
     return packages;
+#endif
+    return items;
 }
 
-QList< PackageTreeItem* >
+PackageTreeItem::List
 PackageModel::getItemPackages( PackageTreeItem* item ) const
 {
-    QList< PackageTreeItem* > selectedPackages;
+    // TODO: why is this not a method of PackageTreeItem?
+    PackageTreeItem::List selectedPackages;
     for ( int i = 0; i < item->childCount(); i++ )
     {
         if ( item->child( i )->isSelected() == Qt::Unchecked )

@@ -37,8 +37,6 @@ class PackageModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    using PackageItemDataList = QList< PackageTreeItem::ItemData >;
-
     explicit PackageModel( const YAML::Node& data, QObject* parent = nullptr );
     ~PackageModel() override;
 
@@ -53,8 +51,8 @@ public:
     int rowCount( const QModelIndex& parent = QModelIndex() ) const override;
     int columnCount( const QModelIndex& parent = QModelIndex() ) const override;
 
-    PackageItemDataList getPackages() const;
-    QList< PackageTreeItem* > getItemPackages( PackageTreeItem* item ) const;
+    PackageTreeItem::List getPackages() const;
+    PackageTreeItem::List getItemPackages( PackageTreeItem* item ) const;
 
 private:
     void setupModelData( const YAML::Node& data, PackageTreeItem* parent );

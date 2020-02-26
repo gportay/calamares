@@ -27,26 +27,10 @@
 class PackageTreeItem : public QStandardItem
 {
 public:
-    struct ItemData
-    {
-        QString name;
-        QString description;
-        QString preScript;
-        QString packageName;
-        QString postScript;
-        bool isCritical = false;
-        bool isHidden = false;
-        Qt::CheckState selected = Qt::Unchecked;
+    using List = QList< PackageTreeItem* >;
 
-        /** @brief Turns this item into a variant for PackageOperations use
-         *
-         * For "plain" items, this is just the package name; items with
-         * scripts return a map. See the package module for how it's interpreted.
-         */
-        QVariant toOperation() const;
-    };
-    explicit PackageTreeItem( const ItemData& data, PackageTreeItem* parent = nullptr );
-    explicit PackageTreeItem( const QString packageName, PackageTreeItem* parent = nullptr );
+    // explicit PackageTreeItem( const ItemData& data, PackageTreeItem* parent = nullptr );
+    explicit PackageTreeItem( const QString& packageName, PackageTreeItem* parent = nullptr );
     explicit PackageTreeItem( PackageTreeItem* parent );
     explicit PackageTreeItem();  // The root of the tree; always selected, named <root>
     ~PackageTreeItem() override;
@@ -57,17 +41,20 @@ public:
     QVariant data( int column ) const override;
     int row() const;
 
-    PackageTreeItem* parentItem();
-    const PackageTreeItem* parentItem() const;
+    PackageTreeItem* parentItem() { return m_parentItem; }
+    const PackageTreeItem* parentItem() const { return m_parentItem; }
 
-    QString prettyName() const;
-    QString description() const;
-    QString preScript() const;
-    QString packageName() const;
-    QString postScript() const;
+    QString prettyName() const { return m_name; }  // Not sure why pretty
+    QString description() const { return m_description; }
+    QString packageName() const { return m_packageName; }
 
-    bool isHidden() const;
-    void setHidden( bool isHidden );
+    bool hasScript() const { return !m_preScript.isEmpty() || !m_postScript.isEmpty(); }
+    QString preScript() const { return m_preScript; }
+    QString postScript() const { return m_postScript; }
+
+    bool isHidden() const { return m_isHidden; }
+    void setHidden( bool isHidden );  // TODO: remove this
+
     /**
      * @brief Is this hidden item, considered "selected"?
      *
@@ -77,18 +64,33 @@ public:
      */
     bool hiddenSelected() const;
 
-    bool isCritical() const;
-    void setCritical( bool isCritical );
+    bool isCritical() const { return m_isCritical; }
+    void setCritical( bool isCritical );  // TODO: remove this
 
-    Qt::CheckState isSelected() const;
+    Qt::CheckState isSelected() const { return m_selected; }
     void setSelected( Qt::CheckState isSelected );
     void setChildrenSelected( Qt::CheckState isSelected );
     int type() const override;
 
+    /** @brief Turns this item into a variant for PackageOperations use
+     *
+     * For "plain" items, this is just the package name; items with
+     * scripts return a map. See the package module for how it's interpreted.
+     */
+    QVariant toOperation() const;
+
 private:
-    PackageTreeItem* m_parentItem;
-    QList< PackageTreeItem* > m_childItems;
-    ItemData m_data;
+    PackageTreeItem* m_parentItem = nullptr;
+    List m_childItems;
+
+    QString m_name;
+    QString m_description;
+    QString m_packageName;
+    QString m_preScript;
+    QString m_postScript;
+    bool m_isCritical = false;
+    bool m_isHidden = false;
+    Qt::CheckState m_selected = Qt::Unchecked;
 };
 
 #endif  // PACKAGETREEITEM_H
