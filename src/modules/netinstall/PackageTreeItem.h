@@ -44,7 +44,10 @@ public:
     PackageTreeItem* parentItem() { return m_parentItem; }
     const PackageTreeItem* parentItem() const { return m_parentItem; }
 
-    QString prettyName() const { return m_name; }  // Not sure why pretty
+    QString prettyName() const
+    {
+        return m_name;  // Not sure why pretty
+    }
     QString description() const { return m_description; }
     QString packageName() const { return m_packageName; }
 

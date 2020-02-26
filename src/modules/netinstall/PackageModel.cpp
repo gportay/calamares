@@ -276,11 +276,15 @@ PackageModel::setupModelData( const YAML::Node& data, PackageTreeItem* parent )
         }
 
         if ( itemDefinition[ "packages" ] )
+        {
             for ( YAML::const_iterator packageIt = itemDefinition[ "packages" ].begin();
                   packageIt != itemDefinition[ "packages" ].end();
                   ++packageIt )
+            {
                 item->appendChild(
                     new PackageTreeItem( CalamaresUtils::yamlToVariant( *packageIt ).toString(), item ) );
+            }
+        }
 
         if ( itemDefinition[ "subgroups" ] )
         {
