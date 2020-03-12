@@ -91,6 +91,8 @@ mapForPartition( Partition* partition, const QString& uuid )
 {
     QVariantMap map;
     map[ "device" ] = partition->partitionPath();
+    map[ "partlabel" ] = partition->label();
+    map[ "partuuid" ] = partition->uuid();
     map[ "mountPoint" ] = PartitionInfo::mountPoint( partition );
     map[ "fsName" ] = userVisibleFS( partition->fileSystem() );
     map[ "fs" ] = untranslatedFS( partition->fileSystem() );
