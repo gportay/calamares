@@ -181,18 +181,11 @@ PythonJob::PythonJob( const ModuleSystem::InstanceKey& instance,
     , m_workingPath( workingPath )
     , m_description()
     , m_configurationMap( moduleConfiguration )
-    , m_weight( ( instance.module() == QStringLiteral( "unpackfs" ) ) ? 12.0 : 1.0 )
 {
 }
 
 
 PythonJob::~PythonJob() {}
-
-qreal
-PythonJob::getJobWeight() const
-{
-    return m_weight;
-}
 
 QString
 PythonJob::prettyName() const

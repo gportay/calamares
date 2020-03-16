@@ -50,8 +50,6 @@ public:
     QString prettyStatusMessage() const override;
     JobResult exec() override;
 
-    virtual qreal getJobWeight() const override;
-
 private:
     struct Private;
 
@@ -63,7 +61,6 @@ private:
     QString m_workingPath;
     QString m_description;
     QVariantMap m_configurationMap;
-    qreal m_weight;
 };
 
 }  // namespace Calamares
