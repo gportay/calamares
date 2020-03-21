@@ -54,6 +54,13 @@ DLLEXPORT qint64 getInteger( const QVariantMap& map, const QString& key, qint64 
 DLLEXPORT double getDouble( const QVariantMap& map, const QString& key, double d );
 
 /**
+ * Get a string list from a mapping; returns empty QStringList if no value or not a
+ * string list. @p success is set to true if the @p key exists in @p map and converts
+ * to a string list, false otherwise.
+ */
+DLLEXPORT QStringList getStringList( const QVariantMap& map, const QString& key, bool& success );
+
+/**
  * Returns a sub-map (i.e. a nested map) from the given mapping with the
  * given key. @p success is set to true if the @p key exists
  * in @p map and converts to a map, false otherwise.

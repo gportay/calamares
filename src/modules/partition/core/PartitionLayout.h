@@ -31,6 +31,7 @@
 // Qt
 #include <QList>
 #include <QObject>
+#include <QStringList>
 #include <QVariantMap>
 
 class Partition;
@@ -42,6 +43,7 @@ public:
     {
         QString partLabel;
         QString partType;
+        QStringList partAttributes;
         QString partMountPoint;
         FileSystem::Type partFileSystem = FileSystem::Unknown;
         QVariantMap partFeatures;
@@ -77,6 +79,7 @@ public:
                    const QString& max = QString() );
     bool addEntry( const QString& label,
                    const QString& type,
+                   const QStringList& attributes,
                    const QString& mountPoint,
                    const QString& fs,
                    const QVariantMap& features,

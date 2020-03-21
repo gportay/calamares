@@ -105,6 +105,23 @@ getDouble( const QVariantMap& map, const QString& key, double d )
     return result;
 }
 
+QStringList
+getStringList( const QVariantMap& map, const QString& key, bool& success )
+{
+    success = false;
+
+    if ( map.contains( key ) )
+    {
+        auto v = map.value( key );
+        if ( v.type() == QVariant::List )
+        {
+            success = true;
+            return v.toStringList();
+        }
+    }
+    return QStringList();
+}
+
 QVariantMap
 getSubMap( const QVariantMap& map, const QString& key, bool& success )
 {
