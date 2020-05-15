@@ -98,7 +98,7 @@ public:
                                  qint64 lastSector,
                                  QString luksPassphrase,
                                  PartitionNode* parent,
-                                 const PartitionRole& role );
+                                 PartitionRole role );
 
 private:
     FileSystem::Type m_defaultFsType;

@@ -266,11 +266,21 @@ PartitionLayout::addEntry( PartitionEntry&& entry, bool prepend )
 #endif
 
 void
+PartitionLayout::removeEntries()
+{
+    m_partLayout.clear();
+}
+
+int
+PartitionLayout::countEntries()
+{
+    return m_partLayout.count();
+}
+
+void
 PartitionLayout::init( const QVariantList& config )
 {
     bool ok;
-
-    m_partLayout.clear();
 
     for ( const auto& r : config )
     {
@@ -313,7 +323,7 @@ PartitionLayout::execute( Device* dev,
                           qint64 &lastSector,
                           QString luksPassphrase,
                           PartitionNode* parent,
-                          const PartitionRole& role )
+                          PartitionRole role )
 {
     QList< Partition* > partList;
     // Map each partition entry to its requested size (0 when calculated later)
@@ -439,7 +449,23 @@ PartitionLayout::execute( Device* dev,
 #if defined( WITH_KPMCORE42API )
             for ( const auto& k : entry.partFeatures.keys() )
             {
-                part->fileSystem().addFeature( k, entry.partFeatures.value( k ) );
+                const auto& v = part.partFeatures.value(k);
+
+                switch (v.type())
+                {
+                case QMetaType::Bool:
+                    currentPartition->fileSystem().addFeature( { k, v.toBool() } );
+                    break;
+                case QMetaType::LongLong:
+                    currentPartition->fileSystem().addFeature( { k, v.toInt() } );
+                    break;
+                case QMetaType::QString:
+                    currentPartition->fileSystem().addFeature( { k, v.toString() } );
+                default:
+                    cWarning() << "Ignoring feature" << k << "of type" << v.type() << ";"
+                               << "requires type QVariant::bool, QVariant::qlonglong or QVariant::QString.";
+                    break;
+                }
             }
 #else
             cWarning() << "Ignoring features; requires KPMcore >= 4.2.0.";
@@ -450,8 +476,40 @@ PartitionLayout::execute( Device* dev,
         partList.append( part );
         currentSector += sectors;
         availableSectors -= sectors;
+#else
+    cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "m_partLayout.size()" << m_partLayout.size();
+    cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "dev->partitionTable()->type()" << dev->partitionTable()->type();
+    cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "dev->partitionTable()->numPrimaries()" << dev->partitionTable()->numPrimaries();
+    cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "maxPrimariesForTableType()" << PartitionTable::maxPrimariesForTableType(dev->partitionTable()->type());
+    cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "tableTypeSupportsExtended()" << PartitionTable::tableTypeSupportsExtended(dev->partitionTable()->type());
+    cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "dev->partitionTable()->extended()" << dev->partitionTable()->extended();
+    if ( dev->partitionTable()->type() == PartitionTable::msdos ) {
+        Partition* extended = nullptr;
+
+        if ( dev->partitionTable()->numPrimaries() + m_partLayout.size() <
+                PartitionTable::maxPrimariesForTableType(dev->partitionTable()->type()) ) {
+
+            if ( PartitionTable::tableTypeSupportsExtended(dev->partitionTable()->type()) ) {
+                extended = dev->partitionTable()->extended();
+                if ( ! extended ) {
+                    extended = KPMHelpers::createNewPartition(parent, *dev, PartitionRole( PartitionRole::Extended ), FileSystem::Extended, firstSector, end, KPM_PARTITION_FLAG( None ) );
+	            role = PartitionRole( PartitionRole::Logical );
+	        }
+                parent = extended;
+                partList.append( extended );
+            }
+
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "m_partLayout.size()" << m_partLayout.size();
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "dev->partitionTable()->type()" << dev->partitionTable()->type();
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "dev->partitionTable()->numPrimaries()" << dev->partitionTable()->numPrimaries();
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "maxPrimariesForTableType()" << PartitionTable::maxPrimariesForTableType(dev->partitionTable()->type());
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "tableTypeSupportsExtended()" << PartitionTable::tableTypeSupportsExtended(dev->partitionTable()->type());
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "dev->partitionTable()->extended()" << dev->partitionTable()->extended();
+	}
     }
 
     lastSector = currentSector - 1;
+#endif
+
     return partList;
 }

@@ -187,7 +187,7 @@ public:
                       qint64 &lastSector,
                       QString luksPassphrase,
                       PartitionNode* parent,
-                      const PartitionRole& role );
+                      PartitionRole role );
 
     /**
      * @brief jobs creates and returns a list of jobs which can then apply the changes

@@ -965,7 +965,7 @@ PartitionCoreModule::layoutApply( Device* dev,
                                   qint64 lastSector,
                                   QString luksPassphrase,
                                   PartitionNode* parent,
-                                  const PartitionRole& role )
+                                  PartitionRole role )
 {
     bool isEfi = PartUtils::isEfiSystem();
     QList< Partition* > partList = m_partLayout.execute( dev, firstSector, lastSector, luksPassphrase, parent, role );
