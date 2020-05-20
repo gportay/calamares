@@ -465,6 +465,7 @@ ChoicePage::applyActionChoice( ChoicePage::InstallChoice choice )
             auto gs = Calamares::JobQueue::instance()->globalStorage();
 
             PartitionActions::Choices::AutoPartitionOptions options {
+                gs->value( "defaultPartitionTableType" ).toString(),
                 gs->value( "defaultFileSystemType" ).toString(),
                 m_encryptWidget->passphrase(),
                 gs->value( "efiSystemPartition" ).toString(),
@@ -808,6 +809,7 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
                     selectedDevice(),
                     selectedPartition,
                     {
+                        gs->value( "defaultPartitionTableType" ).toString(),
                         gs->value( "defaultFileSystemType" ).toString(),
                         m_encryptWidget->passphrase()
                     } );

@@ -102,7 +102,11 @@ ReplaceWidget::applyChanges()
 
             PartitionActions::doReplacePartition(
                 m_core, dev, partition,
-                { gs->value( "defaultFileSystemType" ).toString(), QString() } );
+                {
+                    gs->value( "defaultPartitionTableType" ).toString(),
+                    gs->value( "defaultFileSystemType" ).toString(),
+                    QString()
+                } );
 
             if ( m_isEfi )
             {
