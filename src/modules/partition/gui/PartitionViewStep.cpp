@@ -69,6 +69,7 @@ PartitionViewStep::PartitionViewStep( QObject* parent )
     , m_choicePage( nullptr )
     , m_manualPartitionPage( nullptr )
     , m_requiredStorageGiB( 0.0 )
+    , m_requiredPartitionTableType( )
 {
     m_widget->setContentsMargins( 0, 0, 0, 0 );
 
@@ -637,6 +638,20 @@ PartitionViewStep::setConfigurationMap( const QVariantMap& configurationMap )
 
     // Settings that overlap with the Welcome module
     m_requiredStorageGiB = CalamaresUtils::getDouble( configurationMap, "requiredStorage", -1.0 );
+
+    if ( configurationMap.contains( "requiredPartitionTableType" ) &&
+        configurationMap.value( "requiredPartitionTableType" ).type() == QVariant::List )
+    {
+        m_requiredPartitionTableType.clear();
+        m_requiredPartitionTableType.append( configurationMap.value( "requiredPartitionTableType" ).toStringList() );
+    }
+    else if ( configurationMap.contains( "requiredPartitionTableType" ) &&
+        configurationMap.value( "requiredPartitionTableType" ).type() == QVariant::String )
+    {
+        m_requiredPartitionTableType.clear();
+        m_requiredPartitionTableType.append( configurationMap.value( "requiredPartitionTableType" ).toString() );
+    }
+    gs->insert( "requiredPartitionTableType", m_requiredPartitionTableType);
 
     // These gs settings seem to be unused (in upstream Calamares) outside of
     // the partition module itself.

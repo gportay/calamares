@@ -89,6 +89,7 @@ private:
     QSet< PartitionActions::Choices::SwapChoice > m_swapChoices;
 
     qreal m_requiredStorageGiB;  // May duplicate setting in the welcome module
+    QStringList m_requiredPartitionTableType;
 };
 
 CALAMARES_PLUGIN_FACTORY_DECLARATION( PartitionViewStepFactory )

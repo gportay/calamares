@@ -176,6 +176,7 @@ private:
 
     int m_lastSelectedDeviceIndex;
 
+    QStringList m_requiredPartitionTableType;
     QString m_defaultFsType;
     bool m_enableEncryptionWidget;
     SwapChoiceSet m_availableSwapChoices;  // What is available
