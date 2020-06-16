@@ -2,7 +2,7 @@
  *
  *   SPDX-FileCopyrightText: 2014-2017 Teo Mrnjavac <teo@kde.org>
  *   SPDX-FileCopyrightText: 2017-2019 Adriaan de Groot <groot@kde.org>
- *   SPDX-FileCopyrightText: 2019 Collabora Ltd
+ *   SPDX-FileCopyrightText: 2019-2020 Collabora Ltd
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  *   Calamares is Free Software: see the License-Identifier above.
@@ -736,14 +736,10 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
         return;
     }
 
-    QString* homePartitionPath = new QString();
-    bool doReuseHomePartition = m_reuseHomeCheckBox->isChecked();
-
-    // NOTE: using by-ref captures because we need to write homePartitionPath and
-    //       doReuseHomePartition *after* the device revert, for later use.
     ScanningDialog::run(
         QtConcurrent::run(
-            [this, current]( QString* homePartitionPath, bool doReuseHomePartition ) {
+            [this, current]() {
+                QString homePartitionPath;
                 QMutexLocker locker( &m_coreMutex );
 
                 if ( m_core->isDirty() )
@@ -788,19 +784,6 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
                     selectedPartition = findPartitionByPath( { selectedDevice() }, partPath );
                     if ( selectedPartition )
                     {
-                        // Find out is the selected partition has a rootfs. If yes, then make the
-                        // m_reuseHomeCheckBox visible and set its text to something meaningful.
-                        homePartitionPath->clear();
-                        for ( const OsproberEntry& osproberEntry : m_core->osproberEntries() )
-                            if ( osproberEntry.path == partPath )
-                            {
-                                *homePartitionPath = osproberEntry.homePath;
-                            }
-                        if ( homePartitionPath->isEmpty() )
-                        {
-                            doReuseHomePartition = false;
-                        }
-
                         Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
 
                         PartitionActions::doReplacePartition( m_core,
@@ -809,32 +792,38 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
                                                               { gs->value( "defaultPartitionType" ).toString(),
                                                                 gs->value( "defaultFileSystemType" ).toString(),
                                                                 m_encryptWidget->passphrase() } );
-                        Partition* homePartition = findPartitionByPath( { selectedDevice() }, *homePartitionPath );
 
-                        if ( homePartition && doReuseHomePartition )
-                        {
-                            PartitionInfo::setMountPoint( homePartition, "/home" );
-                            gs->insert( "reuseHome", true );
-                        }
-                        else
-                        {
-                            gs->insert( "reuseHome", false );
+		        if ( m_reuseHomeCheckBox->isChecked() ) {
+                            // Find out is the selected partition has a rootfs. If yes, then make the
+                            // m_reuseHomeCheckBox visible and set its text to something meaningful.
+                            for ( const OsproberEntry& osproberEntry : m_core->osproberEntries() )
+                            {
+                                if ( osproberEntry.path == partPath )
+                                {
+                                    homePartitionPath = osproberEntry.homePath;
+				    break;
+                                }
+                            }
+
+                            Partition* homePartition = findPartitionByPath( { selectedDevice() }, homePartitionPath );
+                            if ( homePartition )
+                            {
+                                PartitionInfo::setMountPoint( homePartition, "/home" );
+                                gs->insert( "reuseHome", true );
+                            }
+                            else
+                            {
+                                gs->insert( "reuseHome", false );
+                            }
                         }
                     }
                 }
-            },
-            homePartitionPath,
-            doReuseHomePartition ),
+            }),
         [=] {
-            m_reuseHomeCheckBox->setVisible( !homePartitionPath->isEmpty() );
-            if ( !homePartitionPath->isEmpty() )
-                m_reuseHomeCheckBox->setText( tr( "Reuse %1 as home partition for %2." )
-                                                  .arg( *homePartitionPath )
-                                                  .arg( Calamares::Branding::instance()->shortProductName() ) );
-            delete homePartitionPath;
-
             if ( m_isEfi )
                 setupEfiSystemPartitionSelector();
+
+            setupHomePartitionSelector();
 
             updateNextEnabled();
             if ( !m_bootloaderComboBox.isNull() && m_bootloaderComboBox->currentIndex() < 0 )
@@ -1117,6 +1106,20 @@ ChoicePage::updateActionChoicePreview( InstallChoice choice )
         efiLayout->addStretch();
     }
 
+    if ( m_config->installChoice() == InstallChoice::Alongside
+         || m_config->installChoice() == InstallChoice::Replace )
+    {
+        QHBoxLayout* homePartitionLayout = new QHBoxLayout;
+        layout->addLayout( homePartitionLayout );
+        m_homePartitionLabel = new QLabel( m_previewAfterFrame );
+        homePartitionLayout->addWidget( m_homePartitionLabel );
+        m_homePartitionComboBox = new QComboBox( m_previewAfterFrame );
+        homePartitionLayout->addWidget( m_homePartitionComboBox );
+        m_homePartitionLabel->setBuddy( m_homePartitionComboBox );
+        m_homePartitionComboBox->hide();
+        homePartitionLayout->addStretch();
+    }
+
     // Also handle selection behavior on beforeFrame.
     QAbstractItemView::SelectionMode previewSelectionMode;
     switch ( m_config->installChoice() )
@@ -1171,6 +1174,36 @@ ChoicePage::setupEfiSystemPartitionSelector()
             {
                 m_efiComboBox->setCurrentIndex( i );
             }
+        }
+    }
+}
+
+
+void
+ChoicePage::setupHomePartitionSelector()
+{
+    // Only the already existing ones:
+    QList< Partition* > partitions = m_core->homePartitions();
+
+    if ( partitions.count() == 1 )
+    {
+        m_homePartitionLabel->setText( tr( "The home partition at %1 will be used for %2." )
+                                           .arg( partitions.first()->partitionPath() )
+                                           .arg( Calamares::Branding::instance()->shortProductName() ) );
+    }
+    else
+    {
+        m_homePartitionComboBox->show();
+        m_homePartitionLabel->setText( tr( "Home partition:" ) );
+        for ( int i = 0; i < partitions.count(); ++i )
+        {
+            Partition* partition = partitions.at( i );
+            m_homePartitionComboBox->addItem( partition->partitionPath(), i );
+
+            // We pick a partition on the currently selected device, if possible
+            if ( partition->devicePath() == selectedDevice()->deviceNode() &&
+                 partition->number() == 1 )
+                m_homePartitionComboBox->setCurrentIndex( i );
         }
     }
 }

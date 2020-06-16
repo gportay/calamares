@@ -2,7 +2,7 @@
  *
  *   SPDX-FileCopyrightText: 2014-2016 Teo Mrnjavac <teo@kde.org>
  *   SPDX-FileCopyrightText: 2018-2019 Adriaan de Groot <groot@kde.org>
- *   SPDX-FileCopyrightText: 2019 Collabora Ltd
+ *   SPDX-FileCopyrightText: 2019-2020 Collabora Ltd
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  *   Calamares is Free Software: see the License-Identifier above.
@@ -120,6 +120,7 @@ private:
     OsproberEntryList getOsproberEntriesForDevice( Device* device ) const;
     void doAlongsideApply();
     void setupEfiSystemPartitionSelector();
+    void setupHomePartitionSelector();
 
     // Translations support
     void updateSwapChoicesTr( QComboBox* box );
@@ -150,6 +151,8 @@ private:
     QPointer< QComboBox > m_bootloaderComboBox;
     QPointer< QLabel > m_efiLabel;
     QPointer< QComboBox > m_efiComboBox;
+    QPointer< QLabel > m_homePartitionLabel;
+    QPointer< QComboBox > m_homePartitionComboBox;
 
     int m_lastSelectedDeviceIndex = -1;
     int m_lastSelectedActionIndex = -1;

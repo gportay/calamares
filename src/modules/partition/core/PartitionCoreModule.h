@@ -177,6 +177,8 @@ public:
 
     QList< Partition* > efiSystemPartitions() const;
 
+    QList< Partition* > homePartitions() const;
+
     QVector< const Partition* > lvmPVs() const;
 
     bool hasVGwithThisName( const QString& name ) const;
@@ -241,6 +243,7 @@ private:
     void updateIsDirty();
     void scanForEfiSystemPartitions();
     void scanForLVMPVs();
+    void scanForHomePartitions();
 
     DeviceInfo* infoForDevice( const Device* ) const;
 
@@ -248,6 +251,7 @@ private:
 
     QList< DeviceInfo* > m_deviceInfos;
     QList< Partition* > m_efiSystemPartitions;
+    QList< Partition* > m_homePartitions;
     QVector< const Partition* > m_lvmPVs;
 
     DeviceModel* m_deviceModel;
