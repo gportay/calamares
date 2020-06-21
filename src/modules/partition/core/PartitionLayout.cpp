@@ -63,11 +63,12 @@ PartitionLayout::PartitionEntry::PartitionEntry()
 {
 }
 
-PartitionLayout::PartitionEntry::PartitionEntry( const QString& size, const QString& min, const QString& max )
+PartitionLayout::PartitionEntry::PartitionEntry( const QString& mountPoint, const QString& size, const QString& minSize, const QString& maxSize )
     : partAttributes( 0 )
+    , partMountPoint( mountPoint )
     , partSize( size )
-    , partMinSize( min )
-    , partMaxSize( max )
+    , partMinSize( minSize )
+    , partMaxSize( maxSize )
 {
 }
 
@@ -95,65 +96,12 @@ PartitionLayout::PartitionEntry::PartitionEntry( const QString& label,
 }
 
 bool
-PartitionLayout::addEntry( const QString& mountPoint, const QString& size, const QString& min, const QString& max )
+PartitionLayout::addEntry( const PartitionEntry& entry )
 {
-    PartitionLayout::PartitionEntry entry( size, min, max );
-
     if ( !entry.isValid() )
     {
-        cError() << "Partition size" << size << "is invalid or" << min << ">" << max;
         return false;
     }
-    if ( mountPoint.isEmpty() || !mountPoint.startsWith( QString( "/" ) ) )
-    {
-        cError() << "Partition mount point" << mountPoint << "is invalid";
-        return false;
-    }
-
-    entry.partMountPoint = mountPoint;
-    entry.partFileSystem = m_defaultFsType;
-
-    m_partLayout.append( entry );
-
-    return true;
-}
-
-bool
-PartitionLayout::addEntry( const QString& label,
-                           const QString& uuid,
-                           const QString& type,
-                           quint64 attributes,
-                           const QString& mountPoint,
-                           const QString& fs,
-                           const QVariantMap& features,
-                           const QString& size,
-                           const QString& min,
-                           const QString& max )
-{
-    PartitionLayout::PartitionEntry entry( size, min, max );
-
-    if ( !entry.isValid() )
-    {
-        cError() << "Partition size" << size << "is invalid or" << min << ">" << max;
-        return false;
-    }
-    if ( mountPoint.isEmpty() || !mountPoint.startsWith( QString( "/" ) ) )
-    {
-        cError() << "Partition mount point" << mountPoint << "is invalid";
-        return false;
-    }
-
-    entry.partLabel = label;
-    entry.partUUID = uuid;
-    entry.partType = type;
-    entry.partAttributes = attributes;
-    entry.partMountPoint = mountPoint;
-    PartUtils::findFS( fs, &entry.partFileSystem );
-    if ( entry.partFileSystem == FileSystem::Unknown )
-    {
-        entry.partFileSystem = m_defaultFsType;
-    }
-    entry.partFeatures = features;
 
     m_partLayout.append( entry );
 
@@ -180,16 +128,16 @@ PartitionLayout::init( const QVariantList& config )
             break;
         }
 
-        if ( !addEntry( CalamaresUtils::getString( pentry, "name" ),
-                        CalamaresUtils::getString( pentry, "uuid" ),
-                        CalamaresUtils::getString( pentry, "type" ),
-                        CalamaresUtils::getUnsignedInteger( pentry, "attributes", 0 ),
-                        CalamaresUtils::getString( pentry, "mountPoint" ),
-                        CalamaresUtils::getString( pentry, "filesystem" ),
-                        CalamaresUtils::getSubMap( pentry, "features", ok ),
-                        CalamaresUtils::getString( pentry, "size", QStringLiteral("0") ),
-                        CalamaresUtils::getString( pentry, "minSize", QStringLiteral("0") ),
-                        CalamaresUtils::getString( pentry, "maxSize", QStringLiteral("0") ) ) )
+        if ( !addEntry( { CalamaresUtils::getString( pentry, "name" ),
+                          CalamaresUtils::getString( pentry, "uuid" ),
+                          CalamaresUtils::getString( pentry, "type" ),
+                          CalamaresUtils::getUnsignedInteger( pentry, "attributes", 0 ),
+                          CalamaresUtils::getString( pentry, "mountPoint" ),
+                          CalamaresUtils::getString( pentry, "filesystem" ),
+                          CalamaresUtils::getSubMap( pentry, "features", ok ),
+                          CalamaresUtils::getString( pentry, "size", QStringLiteral("0") ),
+                          CalamaresUtils::getString( pentry, "minSize", QStringLiteral("0") ),
+                          CalamaresUtils::getString( pentry, "maxSize", QStringLiteral("0") ) } ) )
         {
             cError() << "Partition layout entry #" << config.indexOf( r ) << "is invalid, switching to default layout.";
             m_partLayout.clear();
@@ -199,7 +147,7 @@ PartitionLayout::init( const QVariantList& config )
 
     if ( !m_partLayout.count() )
     {
-        addEntry( QString( "/" ), QString( "100%" ) );
+        addEntry( { QString( "/" ), QString( "100%" ) } );
     }
 }
 
