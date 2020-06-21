@@ -46,6 +46,16 @@ public:
         PartitionEntry();
         /// @brief Parse @p size, @p min and @p max to their respective member variables
         PartitionEntry( const QString& size, const QString& min, const QString& max );
+        PartitionEntry( const QString& label,
+                        const QString& uuid,
+                        const QString& type,
+                        quint64 attributes,
+                        const QString& mountPoint,
+                        const QString& fs,
+                        const QVariantMap& features,
+                        const QString& size,
+                        const QString& minSize = QString(),
+                        const QString& maxSize = QString() );
 
         bool isValid() const
         {

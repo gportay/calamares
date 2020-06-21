@@ -71,6 +71,29 @@ PartitionLayout::PartitionEntry::PartitionEntry( const QString& size, const QStr
 {
 }
 
+PartitionLayout::PartitionEntry::PartitionEntry( const QString& label,
+                                                 const QString& uuid,
+                                                 const QString& type,
+                                                 quint64 attributes,
+                                                 const QString& mountPoint,
+                                                 const QString& fs,
+                                                 const QVariantMap& features,
+                                                 const QString& size,
+                                                 const QString& minSize,
+                                                 const QString& maxSize )
+    : partLabel( label )
+    , partUUID( uuid )
+    , partType( type )
+    , partAttributes( attributes )
+    , partMountPoint( mountPoint )
+    , partFeatures( features )
+    , partSize( size )
+    , partMinSize( minSize )
+    , partMaxSize( maxSize )
+{
+    PartUtils::findFS( fs, &partFileSystem );
+}
+
 bool
 PartitionLayout::addEntry( const QString& mountPoint, const QString& size, const QString& min, const QString& max )
 {
