@@ -157,24 +157,6 @@ PartitionLayout::init( const QVariantList& config )
             break;
         }
 
-        QString sizeString = CalamaresUtils::getString( pentry, "size" );
-        if ( sizeString.isEmpty() )
-        {
-            sizeString.setNum( CalamaresUtils::getInteger( pentry, "size", 0 ) );
-        }
-
-        QString minSizeString = CalamaresUtils::getString( pentry, "minSize" );
-        if ( minSizeString.isEmpty() )
-        {
-            minSizeString.setNum( CalamaresUtils::getInteger( pentry, "minSize", 0 ) );
-        }
-
-        QString maxSizeString = CalamaresUtils::getString( pentry, "maxSize" );
-        if ( maxSizeString.isEmpty() )
-        {
-            maxSizeString.setNum( CalamaresUtils::getInteger( pentry, "maxSize", 0 ) );
-        }
-
         if ( !addEntry( CalamaresUtils::getString( pentry, "name" ),
                         CalamaresUtils::getString( pentry, "uuid" ),
                         CalamaresUtils::getString( pentry, "type" ),
@@ -182,9 +164,9 @@ PartitionLayout::init( const QVariantList& config )
                         CalamaresUtils::getString( pentry, "mountPoint" ),
                         CalamaresUtils::getString( pentry, "filesystem" ),
                         CalamaresUtils::getSubMap( pentry, "features", ok ),
-                        sizeString,
-                        minSizeString,
-                        maxSizeString ) )
+                        CalamaresUtils::getString( pentry, "size", QStringLiteral("0") ),
+                        CalamaresUtils::getString( pentry, "minSize", QStringLiteral("0") ),
+                        CalamaresUtils::getString( pentry, "maxSize", QStringLiteral("0") ) ) )
         {
             cError() << "Partition layout entry #" << config.indexOf( r ) << "is invalid, switching to default layout.";
             m_partLayout.clear();
