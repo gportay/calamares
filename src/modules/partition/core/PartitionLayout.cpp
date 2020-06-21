@@ -141,9 +141,6 @@ void
 PartitionLayout::init( const QVariantList& config )
 {
     bool ok;
-    QString sizeString;
-    QString minSizeString;
-    QString maxSizeString;
 
     m_partLayout.clear();
 
@@ -160,31 +157,22 @@ PartitionLayout::init( const QVariantList& config )
             break;
         }
 
-        if ( CalamaresUtils::getString( pentry, "size" ).isEmpty() )
+        QString sizeString = CalamaresUtils::getString( pentry, "size" );
+        if ( sizeString.isEmpty() )
         {
             sizeString.setNum( CalamaresUtils::getInteger( pentry, "size", 0 ) );
         }
-        else
-        {
-            sizeString = CalamaresUtils::getString( pentry, "size" );
-        }
 
-        if ( CalamaresUtils::getString( pentry, "minSize" ).isEmpty() )
+        QString minSizeString = CalamaresUtils::getString( pentry, "minSize" );
+        if ( minSizeString.isEmpty() )
         {
             minSizeString.setNum( CalamaresUtils::getInteger( pentry, "minSize", 0 ) );
         }
-        else
-        {
-            minSizeString = CalamaresUtils::getString( pentry, "minSize" );
-        }
 
-        if ( CalamaresUtils::getString( pentry, "maxSize" ).isEmpty() )
+        QString maxSizeString = CalamaresUtils::getString( pentry, "maxSize" );
+        if ( maxSizeString.isEmpty() )
         {
             maxSizeString.setNum( CalamaresUtils::getInteger( pentry, "maxSize", 0 ) );
-        }
-        else
-        {
-            maxSizeString = CalamaresUtils::getString( pentry, "maxSize" );
         }
 
         if ( !addEntry( CalamaresUtils::getString( pentry, "name" ),
