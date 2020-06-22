@@ -166,24 +166,24 @@ PartitionLayout::execute( Device* dev,
     // TODO: Refine partition sizes to make sure there is room for every partition
     // Use a default (200-500M ?) minimum size for partition without minSize
 
-    foreach ( const PartitionLayout::PartitionEntry& part, m_partLayout )
+    foreach ( const PartitionLayout::PartitionEntry& entry, m_partLayout )
     {
         Partition* currentPartition = nullptr;
         qint64 sectors, minSectors = 0, maxSectors = availableSectors;
 
         // Calculate partition size (in sectors)
-        sectors = part.size.toSectors( availableSectors, dev->logicalSize() );
+        sectors = entry.partSize.toSectors( availableSectors, dev->logicalSize() );
         if ( sectors == -1 )
         {
-            cWarning() << "Partition" << part.mountPoint << "size is invalid, ignoring...";
+            cWarning() << "Partition" << entry.partMountPoint << "size is invalid, ignoring...";
             continue;
         }
-        minSectors = part.minSize.toSectors( availableSectors, dev->logicalSize() );
+        minSectors = entry.partMinSize.toSectors( availableSectors, dev->logicalSize() );
         if ( minSectors == -1 )
         {
             minSectors = 0;
         }
-        maxSectors = part.maxSize.toSectors( availableSectors, dev->logicalSize() );
+        maxSectors = entry.partMaxSize.toSectors( availableSectors, dev->logicalSize() );
         if ( maxSectors == -1 )
         {
             maxSectors = availableSectors;
@@ -200,46 +200,46 @@ PartitionLayout::execute( Device* dev,
         if ( luksPassphrase.isEmpty() )
         {
             currentPartition = KPMHelpers::createNewPartition(
-                parent, *dev, role, part.fileSystem, currentSector, currentSector + sectors - 1, KPM_PARTITION_FLAG( None ) );
+                parent, *dev, role, entry.partFileSystem, currentSector, currentSector + sectors - 1, KPM_PARTITION_FLAG( None ) );
         }
         else
         {
             currentPartition = KPMHelpers::createNewEncryptedPartition(
-                parent, *dev, role, part.fileSystem, currentSector, currentSector + sectors - 1, luksPassphrase, KPM_PARTITION_FLAG( None ) );
+                parent, *dev, role, entry.partFileSystem, currentSector, currentSector + sectors - 1, luksPassphrase, KPM_PARTITION_FLAG( None ) );
         }
         PartitionInfo::setFormat( currentPartition, true );
-        PartitionInfo::setMountPoint( currentPartition, part.partMountPoint );
-        if ( !part.partLabel.isEmpty() )
+        PartitionInfo::setMountPoint( currentPartition, entry.partMountPoint );
+        if ( !entry.partLabel.isEmpty() )
         {
-            currentPartition->setLabel( part.partLabel );
-            currentPartition->fileSystem().setLabel( part.partLabel );
+            currentPartition->setLabel( entry.partLabel );
+            currentPartition->fileSystem().setLabel( entry.partLabel );
         }
-        if ( !part.partUUID.isEmpty() )
+        if ( !entry.partUUID.isEmpty() )
         {
-            currentPartition->setUUID( part.partUUID );
+            currentPartition->setUUID( entry.partUUID );
         }
-        if ( !part.partType.isEmpty() )
+        if ( !entry.partType.isEmpty() )
         {
 #if defined( WITH_KPMCORE42API )
-            currentPartition->setType( part.partType );
+            currentPartition->setType( entry.partType );
 #else
             cWarning() << "Ignoring type; requires KPMcore >= 4.2.0.";
 #endif
         }
-        if ( part.partAttributes )
+        if ( entry.partAttributes )
         {
 #if defined( WITH_KPMCORE42API )
-            currentPartition->setAttributes( part.partAttributes );
+            currentPartition->setAttributes( entry.partAttributes );
 #else
             cWarning() << "Ignoring attributes; requires KPMcore >= 4.2.0.";
 #endif
         }
-        if ( !part.partFeatures.isEmpty() )
+        if ( !entry.partFeatures.isEmpty() )
         {
 #if defined( WITH_KPMCORE42API )
-            for ( const auto& k : part.partFeatures.keys() )
+            for ( const auto& k : entry.partFeatures.keys() )
             {
-                currentPartition->fileSystem().addFeature( k, part.partFeatures.value( k ) );
+                currentPartition->fileSystem().addFeature( k, entry.partFeatures.value( k ) );
             }
 #else
             cWarning() << "Ignoring features; requires KPMcore >= 4.2.0.";
