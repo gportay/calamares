@@ -176,9 +176,9 @@ PartitionLayout::execute( Device* dev,
 {
     QList< Partition* > partList;
     // Map each partition entry to its requested size (0 when calculated later)
-    QMap< const PartitionLayout::PartitionEntry*, qint64 > partSizeMap;
-    qint64 totalSize = lastSector - firstSector + 1;
-    qint64 availableSize = totalSize;
+    QMap< const PartitionLayout::PartitionEntry*, qint64 > partSectorsMap;
+    const qint64 totalSectors = lastSector - firstSector + 1;
+    qint64 availableSectors = totalSectors;
 
     // Let's check if we have enough space for each partSize
     for ( const auto& part : qAsConst( m_partLayout ) )
@@ -191,108 +191,84 @@ PartitionLayout::execute( Device* dev,
 
         // Calculate partition size: Rely on "possibly uninitialized use"
         // warnings to ensure that all the cases are covered below.
-        qint64 size;
         // We need to ignore the percent-defined until later
+        qint64 sectors = 0;
         if ( part.partSize.unit() != CalamaresUtils::Partition::SizeUnit::Percent )
         {
-            size = part.partSize.toSectors( totalSize, dev->logicalSize() );
+            sectors = part.partSize.toSectors( totalSectors, dev->logicalSize() );
         }
-        else
+        else if ( part.partMinSize.isValid() )
         {
-            if ( part.partMinSize.isValid() )
-            {
-                size = part.partMinSize.toSectors( totalSize, dev->logicalSize() );
-            }
-            else
-            {
-                size = 0;
-            }
+            sectors = part.partMinSize.toSectors( totalSectors, dev->logicalSize() );
         }
-
-        partSizeMap.insert( &part, size );
-        availableSize -= size;
+        partSectorsMap.insert( &part, sectors );
+        availableSectors -= sectors;
     }
 
     // Use partMinSize and see if we can do better afterward.
-    if ( availableSize < 0 )
+    if ( availableSectors < 0 )
     {
-        availableSize = totalSize;
+        availableSectors = totalSectors;
         for ( const auto& part : qAsConst( m_partLayout ) )
         {
-            qint64 size;
-
+            qint64 sectors = 0;
             if ( part.partMinSize.isValid() )
             {
-                size = part.partMinSize.toSectors( totalSize, dev->logicalSize() );
+                sectors = part.partMinSize.toSectors( totalSectors, dev->logicalSize() );
             }
-            else if ( part.partSize.isValid() )
+            else if ( part.partSize.isValid() && part.partSize.unit() != CalamaresUtils::Partition::SizeUnit::Percent )
             {
-                if ( part.partSize.unit() != CalamaresUtils::Partition::SizeUnit::Percent )
-                {
-                    size = part.partSize.toSectors( totalSize, dev->logicalSize() );
-                }
-                else
-                {
-                    size = 0;
-                }
+                sectors = part.partSize.toSectors( totalSectors, dev->logicalSize() );
             }
-            else
-            {
-                size = 0;
-            }
-
-            partSizeMap.insert( &part, size );
-            availableSize -= size;
+            partSectorsMap.insert( &part, sectors );
+            availableSectors -= sectors;
         }
     }
 
-    // Assign size for percentage-defined partitions
+    // Assign sectors for percentage-defined partitions
     for ( const auto& part : qAsConst( m_partLayout ) )
     {
         if ( part.partSize.unit() == CalamaresUtils::Partition::SizeUnit::Percent )
         {
-            qint64 size = partSizeMap.value( &part );
-            size = part.partSize.toSectors( availableSize + size, dev->logicalSize() );
+            qint64 sectors = part.partSize.toSectors( availableSectors + partSectorsMap.value( &part ),
+                                                      dev->logicalSize() );
             if ( part.partMinSize.isValid() )
             {
-                qint64 minSize = part.partMinSize.toSectors( totalSize, dev->logicalSize() );
-                if ( minSize > size )
+                qint64 minSectors = part.partMinSize.toSectors( totalSectors, dev->logicalSize() );
+                if ( minSectors > sectors )
                 {
-                    size = minSize;
+                    sectors = minSectors;
                 }
             }
             if ( part.partMaxSize.isValid() )
             {
-                qint64 maxSize = part.partMaxSize.toSectors( totalSize, dev->logicalSize() );
-                if ( maxSize < size )
+                qint64 maxSectors = part.partMaxSize.toSectors( totalSectors, dev->logicalSize() );
+                if ( maxSectors < sectors )
                 {
-                    size = maxSize;
+                    sectors = maxSectors;
                 }
             }
-
-            partSizeMap.insert( &part, size );
+            partSectorsMap.insert( &part, sectors );
         }
     }
-
-    availableSize = totalSize;
 
     // TODO: Refine partition sizes to make sure there is room for every partition
     // Use a default (200-500M ?) minimum size for partition without minSize
 
+    availableSectors = totalSectors;
     for ( const auto& part : qAsConst( m_partLayout ) )
     {
-        qint64 size, end;
+        qint64 end;
         Partition* currentPartition = nullptr;
 
-        size = partSizeMap.value( &part );
-
         // Adjust partition size based on available space
-        if ( size > availableSize )
+        qint64 sectors = partSectorsMap.value( &part );
+        if ( sectors > availableSectors )
         {
-            size = availableSize;
+            sectors = availableSectors;
         }
 
-        end = firstSector + std::max( size - 1, Q_INT64_C( 0 ) );
+        end = firstSector + std::max( sectors - 1, Q_INT64_C( 0 ) );
 
         if ( luksPassphrase.isEmpty() )
         {
@@ -346,7 +322,7 @@ PartitionLayout::execute( Device* dev,
         // Otherwise they ignore the device in boot-order, so add it here.
         partList.append( currentPartition );
         firstSector = end + 1;
-        availableSize -= size;
+        availableSectors -= sectors;
     }
 
     return partList;
