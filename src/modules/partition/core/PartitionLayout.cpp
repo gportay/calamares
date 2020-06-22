@@ -168,7 +168,7 @@ PartitionLayout::execute( Device* dev,
 
     foreach ( const PartitionLayout::PartitionEntry& entry, m_partLayout )
     {
-        Partition* currentPartition = nullptr;
+        Partition* part = nullptr;
         qint64 sectors, minSectors = 0, maxSectors = availableSectors;
 
         // Calculate partition size (in sectors)
@@ -199,29 +199,29 @@ PartitionLayout::execute( Device* dev,
 
         if ( luksPassphrase.isEmpty() )
         {
-            currentPartition = KPMHelpers::createNewPartition(
+            part = KPMHelpers::createNewPartition(
                 parent, *dev, role, entry.partFileSystem, currentSector, currentSector + sectors - 1, KPM_PARTITION_FLAG( None ) );
         }
         else
         {
-            currentPartition = KPMHelpers::createNewEncryptedPartition(
+            part = KPMHelpers::createNewEncryptedPartition(
                 parent, *dev, role, entry.partFileSystem, currentSector, currentSector + sectors - 1, luksPassphrase, KPM_PARTITION_FLAG( None ) );
         }
-        PartitionInfo::setFormat( currentPartition, true );
-        PartitionInfo::setMountPoint( currentPartition, entry.partMountPoint );
+        PartitionInfo::setFormat( part, true );
+        PartitionInfo::setMountPoint( part, entry.partMountPoint );
         if ( !entry.partLabel.isEmpty() )
         {
-            currentPartition->setLabel( entry.partLabel );
-            currentPartition->fileSystem().setLabel( entry.partLabel );
+            part->setLabel( entry.partLabel );
+            part->fileSystem().setLabel( entry.partLabel );
         }
         if ( !entry.partUUID.isEmpty() )
         {
-            currentPartition->setUUID( entry.partUUID );
+            part->setUUID( entry.partUUID );
         }
         if ( !entry.partType.isEmpty() )
         {
 #if defined( WITH_KPMCORE42API )
-            currentPartition->setType( entry.partType );
+            part->setType( entry.partType );
 #else
             cWarning() << "Ignoring type; requires KPMcore >= 4.2.0.";
 #endif
@@ -229,7 +229,7 @@ PartitionLayout::execute( Device* dev,
         if ( entry.partAttributes )
         {
 #if defined( WITH_KPMCORE42API )
-            currentPartition->setAttributes( entry.partAttributes );
+            part->setAttributes( entry.partAttributes );
 #else
             cWarning() << "Ignoring attributes; requires KPMcore >= 4.2.0.";
 #endif
@@ -239,7 +239,7 @@ PartitionLayout::execute( Device* dev,
 #if defined( WITH_KPMCORE42API )
             for ( const auto& k : entry.partFeatures.keys() )
             {
-                currentPartition->fileSystem().addFeature( k, entry.partFeatures.value( k ) );
+                part->fileSystem().addFeature( k, entry.partFeatures.value( k ) );
             }
 #else
             cWarning() << "Ignoring features; requires KPMcore >= 4.2.0.";
@@ -247,7 +247,7 @@ PartitionLayout::execute( Device* dev,
         }
         // Some buggy (legacy) BIOSes test if the bootflag of at least one partition is set.
         // Otherwise they ignore the device in boot-order, so add it here.
-        partList.append( currentPartition );
+        partList.append( part );
         currentSector += sectors;
         availableSectors -= sectors;
     }
