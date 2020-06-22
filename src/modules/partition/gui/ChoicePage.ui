@@ -38,16 +38,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
    <item>
     <layout class="QVBoxLayout" name="m_rightLayout" stretch="0,1,0,0,0,0,0">
      <item>
-      <widget class="QLabel" name="m_messageLabel">
-       <property name="toolTip">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string notr="true">&lt;m_messageLabel&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QScrollArea" name="m_itemsScrollArea">
        <property name="frameShape">
         <enum>QFrame::NoFrame</enum>

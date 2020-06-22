@@ -268,12 +268,15 @@ PartitionModel::data( const QModelIndex& index, int role ) const
             }
         return QVariant();
     case OsproberHomePartitionPathRole:
+        cDebug() << __func__ << "@" << __FILE__ << "@" << __LINE__ << "role" << role;
         foreach ( const OsproberEntry& osproberEntry, m_osproberEntries )
             if ( partition->fileSystem().supportGetUUID() != FileSystem::cmdSupportNone
                  && !partition->fileSystem().uuid().isEmpty() && osproberEntry.uuid == partition->fileSystem().uuid() )
             {
+                cDebug() << __func__ << "@" << __FILE__ << "@" << __LINE__ << "return osproberEntry.homePath" << osproberEntry.homePath;
                 return osproberEntry.homePath;
             }
+        cDebug() << __func__ << "@" << __FILE__ << "@" << __LINE__ << "return QVariant()" << QVariant();
         return QVariant();
         // end Osprober roles.
 

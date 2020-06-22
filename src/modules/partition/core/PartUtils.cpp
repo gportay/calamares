@@ -409,6 +409,7 @@ runOsprober( DeviceModel* dm )
 
             FstabEntryList fstabEntries = lookForFstabEntries( path );
             QString homePath = findPartitionPathForMountPoint( fstabEntries, "/home" );
+            cDebug() << __FILE__ << "@" << __func__ << "@" << __LINE__ << "homePath" << homePath;
 
             osproberEntries.append(
                 { prettyName, path, file, QString(), canBeResized( dm, path ), lineColumns, fstabEntries, homePath } );
@@ -486,6 +487,7 @@ isHomePartition( const Partition* candidate )
     return table && ( table->type() == PartitionTable::TableType::gpt ) && candidate->type().compare("933AC7E1-2EB4-4F13-B844-0E14E2AEF915", Qt::CaseInsensitive ) == 0;
 }
 
+// TODO: FileSystme::Type& fsType 
 QString
 findFS( QString fsName, FileSystem::Type* fsType )
 {

@@ -195,7 +195,8 @@ EditExistingPartitionDialog::applyChanges( PartitionCoreModule* core )
                                                                           m_partition->roles(),
                                                                           fsType,
                                                                           m_partition->firstSector(),
-                                                                          m_partition->lastSector(),
+                                                                          m_partition->lastSector(), // TODO not -1
+                                                                          PartitionInfo::mountPoint( m_partition ),
                                                                           newFlags() );
                 PartitionInfo::setMountPoint( newPartition, PartitionInfo::mountPoint( m_partition ) );
                 PartitionInfo::setFormat( newPartition, true );
