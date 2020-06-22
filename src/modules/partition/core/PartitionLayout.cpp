@@ -160,134 +160,52 @@ PartitionLayout::execute( Device* dev,
                           const PartitionRole& role )
 {
     QList< Partition* > partList;
-    // Map each partition entry to its requested size (0 when calculated later)
-    QMap< const PartitionLayout::PartitionEntry*, qint64 > partSizeMap;
-    qint64 totalSize = lastSector - firstSector + 1;
-    qint64 availableSize = totalSize;
-
-    // Let's check if we have enough space for each partSize
-    for ( const auto& part : qAsConst( m_partLayout ) )
-    {
-        if ( !part.partSize.isValid() )
-        {
-            cWarning() << "Partition" << part.partMountPoint << "size is invalid, skipping...";
-            continue;
-        }
-
-        // Calculate partition size: Rely on "possibly uninitialized use"
-        // warnings to ensure that all the cases are covered below.
-        qint64 size;
-        // We need to ignore the percent-defined until later
-        if ( part.partSize.unit() != CalamaresUtils::Partition::SizeUnit::Percent )
-        {
-            size = part.partSize.toSectors( totalSize, dev->logicalSize() );
-        }
-        else
-        {
-            if ( part.partMinSize.isValid() )
-            {
-                size = part.partMinSize.toSectors( totalSize, dev->logicalSize() );
-            }
-            else
-            {
-                size = 0;
-            }
-        }
-
-        partSizeMap.insert( &part, size );
-        availableSize -= size;
-    }
-
-    // Use partMinSize and see if we can do better afterward.
-    if ( availableSize < 0 )
-    {
-        availableSize = totalSize;
-        for ( const auto& part : qAsConst( m_partLayout ) )
-        {
-            qint64 size;
-
-            if ( part.partMinSize.isValid() )
-            {
-                size = part.partMinSize.toSectors( totalSize, dev->logicalSize() );
-            }
-            else if ( part.partSize.isValid() )
-            {
-                if ( part.partSize.unit() != CalamaresUtils::Partition::SizeUnit::Percent )
-                {
-                    size = part.partSize.toSectors( totalSize, dev->logicalSize() );
-                }
-                else
-                {
-                    size = 0;
-                }
-            }
-            else
-            {
-                size = 0;
-            }
-
-            partSizeMap.insert( &part, size );
-            availableSize -= size;
-        }
-    }
-
-    // Assign size for percentage-defined partitions
-    for ( const auto& part : qAsConst( m_partLayout ) )
-    {
-        if ( part.partSize.unit() == CalamaresUtils::Partition::SizeUnit::Percent )
-        {
-            qint64 size = partSizeMap.value( &part );
-            size = part.partSize.toSectors( availableSize + size, dev->logicalSize() );
-            if ( part.partMinSize.isValid() )
-            {
-                qint64 minSize = part.partMinSize.toSectors( totalSize, dev->logicalSize() );
-                if ( minSize > size )
-                {
-                    size = minSize;
-                }
-            }
-            if ( part.partMaxSize.isValid() )
-            {
-                qint64 maxSize = part.partMaxSize.toSectors( totalSize, dev->logicalSize() );
-                if ( maxSize < size )
-                {
-                    size = maxSize;
-                }
-            }
-
-            partSizeMap.insert( &part, size );
-        }
-    }
-
-    availableSize = totalSize;
+    qint64 currentSector = firstSector;
+    qint64 availableSectors = lastSector - firstSector + 1;
 
     // TODO: Refine partition sizes to make sure there is room for every partition
     // Use a default (200-500M ?) minimum size for partition without minSize
 
-    for ( const auto& part : qAsConst( m_partLayout ) )
+    foreach ( const PartitionLayout::PartitionEntry& part, m_partLayout )
     {
-        qint64 size, end;
         Partition* currentPartition = nullptr;
+        qint64 sectors, minSectors = 0, maxSectors = availableSectors;
 
-        size = partSizeMap.value( &part );
-
-        // Adjust partition size based on available space
-        if ( size > availableSize )
+        // Calculate partition size (in sectors)
+        sectors = part.size.toSectors( availableSectors, dev->logicalSize() );
+        if ( sectors == -1 )
         {
-            size = availableSize;
+            cWarning() << "Partition" << part.mountPoint << "size is invalid, ignoring...";
+            continue;
+        }
+        minSectors = part.minSize.toSectors( availableSectors, dev->logicalSize() );
+        if ( minSectors == -1 )
+        {
+            minSectors = 0;
+        }
+        maxSectors = part.maxSize.toSectors( availableSectors, dev->logicalSize() );
+        if ( maxSectors == -1 )
+        {
+            maxSectors = availableSectors;
         }
 
-        end = firstSector + std::max( size - 1, Q_INT64_C( 0 ) );
+        // Make sure we never go under min once converted to sectors
+        maxSectors = std::max(maxSectors, minSectors);
+
+        // Adjust partition size based on user-defined boundaries and available space
+        sectors = std::max(sectors, minSectors);
+        sectors = std::min(sectors, maxSectors);
+        sectors = std::min(sectors, availableSectors);
 
         if ( luksPassphrase.isEmpty() )
         {
             currentPartition = KPMHelpers::createNewPartition(
-                parent, *dev, role, part.partFileSystem, firstSector, end, KPM_PARTITION_FLAG( None ) );
+                parent, *dev, role, part.fileSystem, currentSector, currentSector + sectors - 1, KPM_PARTITION_FLAG( None ) );
         }
         else
         {
             currentPartition = KPMHelpers::createNewEncryptedPartition(
-                parent, *dev, role, part.partFileSystem, firstSector, end, luksPassphrase, KPM_PARTITION_FLAG( None ) );
+                parent, *dev, role, part.fileSystem, currentSector, currentSector + sectors - 1, luksPassphrase, KPM_PARTITION_FLAG( None ) );
         }
         PartitionInfo::setFormat( currentPartition, true );
         PartitionInfo::setMountPoint( currentPartition, part.partMountPoint );
@@ -330,8 +248,8 @@ PartitionLayout::execute( Device* dev,
         // Some buggy (legacy) BIOSes test if the bootflag of at least one partition is set.
         // Otherwise they ignore the device in boot-order, so add it here.
         partList.append( currentPartition );
-        firstSector = end + 1;
-        availableSize -= size;
+        currentSector += sectors;
+        availableSectors -= sectors;
     }
 
     return partList;
