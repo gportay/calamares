@@ -180,7 +180,8 @@ PartitionLayout::execute( Device* dev,
     const qint64 totalSectors = lastSector - firstSector + 1;
     qint64 currentSector, availableSectors = totalSectors;
 
-    // Let's check if we have enough space for each partSize
+    // Let's check if we have enough space for each partitions, using the size
+    // propery or the min-size property if unit is in percentage.
     for ( const auto& part : qAsConst( m_partLayout ) )
     {
         if ( !part.partSize.isValid() )
@@ -205,7 +206,8 @@ PartitionLayout::execute( Device* dev,
         availableSectors -= sectors;
     }
 
-    // Use partMinSize and see if we can do better afterward.
+    // There is not enough space for all partitions, use the min-size property
+    // and see if we can do better afterward.
     if ( availableSectors < 0 )
     {
         availableSectors = totalSectors;
@@ -240,9 +242,7 @@ PartitionLayout::execute( Device* dev,
         }
     }
 
-    // TODO: Refine partition sizes to make sure there is room for every partition
-    // Use a default (200-500M ?) minimum size for partition without minSize
-
+    // Create the partitions
     currentSector = firstSector;
     availableSectors = totalSectors;
     for ( const auto& part : qAsConst( m_partLayout ) )
