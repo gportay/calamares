@@ -1389,21 +1389,6 @@ ChoicePage::setupActions()
 
     if ( osproberEntriesForCurrentDevice.count() == 0 )
     {
-        CALAMARES_RETRANSLATE(
-            cDebug() << "Setting texts for 0 osprober entries";
-            m_eraseButton->setText( tr( "<strong>Erase disk</strong><br/>"
-                                        "This will <font color=\"red\">delete</font> all data "
-                                        "currently present on the selected storage device." ) );
-
-            m_alongsideButton->setText( tr( "<strong>Install alongside</strong><br/>"
-                                            "The installer will shrink a partition to make room for %1." )
-                                        .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-
-            m_replaceButton->setText( tr( "<strong>Replace a partition</strong><br/>"
-                                          "Replaces a partition with %1." )
-                                      .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-        )
-
         m_replaceButton->hide();
         m_alongsideButton->hide();
         m_grp->setExclusive( false );
@@ -1411,66 +1396,20 @@ ChoicePage::setupActions()
         m_alongsideButton->setChecked( false );
         m_grp->setExclusive( true );
     }
-    else if ( osproberEntriesForCurrentDevice.count() == 1 )
-    {
-        QString osName = osproberEntriesForCurrentDevice.first().prettyName;
 
-        if ( !osName.isEmpty() )
-        {
-            CALAMARES_RETRANSLATE(
-                cDebug() << "Setting texts for 1 non-empty osprober entry";
-                m_alongsideButton->setText( tr( "<strong>Install alongside</strong><br/>"
-                                                "The installer will shrink a partition to make room for %1." )
-                                            .arg( Calamares::Branding::instance()->shortVersionedName() ) );
+    CALAMARES_RETRANSLATE(
+        m_alongsideButton->setText( tr( "<strong>Install alongside</strong><br/>"
+                                        "The installer will shrink a partition to make room for %1." )
+                                    .arg( Calamares::Branding::instance()->shortVersionedName() ) );
 
-                m_eraseButton->setText( tr( "<strong>Erase disk</strong><br/>"
-                                            "This will <font color=\"red\">delete</font> all data "
-                                            "currently present on the selected storage device." ) );
+        m_eraseButton->setText( tr( "<strong>Erase disk</strong><br/>"
+                                    "This will <font color=\"red\">delete</font> all data "
+                                    "currently present on the selected storage device." ) );
 
-
-                m_replaceButton->setText( tr( "<strong>Replace a partition</strong><br/>"
-                                              "Replaces a partition with %1." )
-                                          .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-            )
-        }
-        else
-        {
-            CALAMARES_RETRANSLATE(
-                cDebug() << "Setting texts for 1 empty osprober entry";
-                m_alongsideButton->setText( tr( "<strong>Install alongside</strong><br/>"
-                                                "The installer will shrink a partition to make room for %1." )
-                                            .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-
-                m_eraseButton->setText( tr( "<strong>Erase disk</strong><br/>"
-                                            "This will <font color=\"red\">delete</font> all data "
-                                            "currently present on the selected storage device." ) );
-
-                m_replaceButton->setText( tr( "<strong>Replace a partition</strong><br/>"
-                                              "Replaces a partition with %1." )
-                                          .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-            )
-        }
-    }
-    else
-    {
-        // osproberEntriesForCurrentDevice has at least 2 items.
-
-        CALAMARES_RETRANSLATE(
-            cDebug() << "Setting texts for >= 2 osprober entries";
-
-            m_alongsideButton->setText( tr( "<strong>Install alongside</strong><br/>"
-                                            "The installer will shrink a partition to make room for %1." )
-                                        .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-
-            m_eraseButton->setText( tr( "<strong>Erase disk</strong><br/>"
-                                        "This will <font color=\"red\">delete</font> all data "
-                                        "currently present on the selected storage device." ) );
-
-            m_replaceButton->setText( tr( "<strong>Replace a partition</strong><br/>"
-                                          "Replaces a partition with %1." )
-                                      .arg( Calamares::Branding::instance()->shortVersionedName() ) );
-        )
-    }
+        m_replaceButton->setText( tr( "<strong>Replace a partition</strong><br/>"
+                                      "Replaces a partition with %1." )
+                                  .arg( Calamares::Branding::instance()->shortVersionedName() ) );
+    )
 
 #ifdef DEBUG_PARTITION_UNSAFE
 #ifdef DEBUG_PARTITION_LAME
