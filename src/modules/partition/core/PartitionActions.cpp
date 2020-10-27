@@ -207,6 +207,9 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
         {
             swapPartition->setLabel( gs->value( "swapPartitionName" ).toString() );
         }
+#if defined( WITH_KPMCORE42API )
+        swapPartition->setType( "0657fd6d-a4ab-43c4-84e5-0933c84b4f4f" );
+#endif
         core->createPartition( dev, swapPartition );
     }
 
