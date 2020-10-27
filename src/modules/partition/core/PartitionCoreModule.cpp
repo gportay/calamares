@@ -959,7 +959,7 @@ PartitionCoreModule::layoutAddEntry( PartitionLayout::PartitionEntry&& entry, bo
 #endif
 #endif
 
-void
+qint64
 PartitionCoreModule::layoutApply( Device* dev,
                                   qint64 firstSector,
                                   qint64 lastSector,
@@ -999,12 +999,14 @@ PartitionCoreModule::layoutApply( Device* dev,
             createPartition( dev, part );
         }
     }
+
+    return lastSector;
 }
 
-void
+qint64
 PartitionCoreModule::layoutApply( Device* dev, qint64 firstSector, qint64 lastSector, QString luksPassphrase )
 {
-    layoutApply(
+    return layoutApply(
         dev, firstSector, lastSector, luksPassphrase, dev->partitionTable(), PartitionRole( PartitionRole::Primary ) );
 }
 

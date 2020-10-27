@@ -310,7 +310,7 @@ PartitionLayout::init( const QVariantList& config )
 QList< Partition* >
 PartitionLayout::execute( Device* dev,
                           qint64 firstSector,
-                          qint64 lastSector,
+                          qint64 &lastSector,
                           QString luksPassphrase,
                           PartitionNode* parent,
                           const PartitionRole& role )
@@ -452,5 +452,6 @@ PartitionLayout::execute( Device* dev,
         availableSectors -= sectors;
     }
 
+    lastSector = currentSector - 1;
     return partList;
 }
