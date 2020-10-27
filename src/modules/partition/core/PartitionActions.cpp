@@ -126,18 +126,6 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
                               false );
     }
 
-    qint64 lastSectorForRoot = dev->totalLogical() - 1; // last sector of the device
-
-    bool shouldCreateHome = gs->contains( "reuseHome" ).toBool();
-    QString size = gs->contains( "homePartitionSize" ).toString();
-
-    qint64 homeSizeB = 5_GiB;
-
-    if ( shouldCreateHome )
-    {
-        lastSectorForRoot -= homeSizeB / dev->logicalSize() + 1;
-    }
-
     const bool mayCreateSwap
         = ( o.swap == Config::SwapChoice::SmallSwap ) || ( o.swap == Config::SwapChoice::FullSwap );
     bool shouldCreateSwap = false;
@@ -152,43 +140,17 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
         // 0.6GiB (this was 2.1GiB up to Calamares 3.2.2).
         qint64 requiredSpaceB = o.requiredSpaceB + 600_MiB + suggestedSwapSizeB;
 
-        // If there is enough room for ESP + root + home + swap, create swap, otherwise don't.
+        // If there is enough room for ESP + root + swap, create swap, otherwise don't.
         shouldCreateSwap = availableSpaceB > requiredSpaceB;
     }
 
+    qint64 lastSectorForRoot = dev->totalLogical() - 1;  //last sector of the device
     if ( shouldCreateSwap )
     {
         lastSectorForRoot -= suggestedSwapSizeB / dev->logicalSize() + 1;
     }
 
-    qint64 lastSectorOfLayout  = core->layoutApply( dev, firstFreeSector, lastSectorForRoot, o.luksPassphrase );
-    if ( lastSectorOfLayout < lastSectorForRoot )
-    {
-    
-    }
-
-    if ( shouldCreateHome )
-    {
-        Partition* homePartition = KPMHelpers::createNewPartition( dev->partitionTable(),
-                                                                  *dev,
-                                                                  PartitionRole( PartitionRole::Primary ),
-                                                                  "ext4",
-                                                                  lastSectorForRoot + 1,
-                                                                  dev->totalLogical() - 1,
-                                                                  KPM_PARTITION_FLAG( None ) );
-        PartitionInfo::setFormat( efiPartition, true );
-        PartitionInfo::setMountPoint( efiPartition, o.efiPartitionMountPoint );
-        name = gs->contains( "homePartitionName" ).toString();
-        if ( !name.isEmpty() )
-        {
-            homePartition->setLabel( gs->value( "homePartitionName" ).toString() );
-        }
-#if defined( WITH_KPMCORE42API )
-        homePartition->setType( "933ac7e1-2eb4-4f13-b844-0e14e2aef915" );
-#endif
-        core->createPartition( dev, homePartition );
-        firstFreeSector = lastSector + 1;
-    }
+    core->layoutApply( dev, firstFreeSector, lastSectorForRoot, o.luksPassphrase );
 
     if ( shouldCreateSwap )
     {
