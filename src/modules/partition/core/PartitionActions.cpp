@@ -113,36 +113,16 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
 
     if ( isEfi )
     {
-        int uefisys_part_sizeB = 300_MiB;
-        if ( gs->contains( "efiSystemPartitionSize" ) )
-        {
-            CalamaresUtils::Partition::PartitionSize part_size
-                = CalamaresUtils::Partition::PartitionSize( gs->value( "efiSystemPartitionSize" ).toString() );
-            uefisys_part_sizeB = part_size.toBytes( dev->capacity() );
-        }
-
-        qint64 efiSectorCount = CalamaresUtils::bytesToSectors( uefisys_part_sizeB, dev->logicalSize() );
-        Q_ASSERT( efiSectorCount > 0 );
-
-        // Since sectors count from 0, and this partition is created starting
-        // at firstFreeSector, we need efiSectorCount sectors, numbered
-        // firstFreeSector..firstFreeSector+efiSectorCount-1.
-        qint64 lastSector = firstFreeSector + efiSectorCount - 1;
-        Partition* efiPartition = KPMHelpers::createNewPartition( dev->partitionTable(),
-                                                                  *dev,
-                                                                  PartitionRole( PartitionRole::Primary ),
-                                                                  FileSystem::Fat32,
-                                                                  firstFreeSector,
-                                                                  lastSector,
-                                                                  KPM_PARTITION_FLAG( None ) );
-        PartitionInfo::setFormat( efiPartition, true );
-        PartitionInfo::setMountPoint( efiPartition, o.efiPartitionMountPoint );
-        if ( gs->contains( "efiSystemPartitionName" ) )
-        {
-            efiPartition->setLabel( gs->value( "efiSystemPartitionName" ).toString() );
-        }
-        core->createPartition( dev, efiPartition, KPM_PARTITION_FLAG_ESP );
-        firstFreeSector = lastSector + 1;
+        core->layoutAddEntry( { gs->contains( "efiSystemPartitionName" ) ? gs->value( "efiSystemPartitionName" ).toString() : QString( "efi" ),
+                                QString( "" ),
+                                QString( "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ),
+                                0,
+                                gs->contains( "efiSystemPartition" ) ? gs->value( "efiSystemPartition" ).toString() : QString( "/boot/efi" ),
+                                QString( "FAT32" ),
+                                { },
+                                gs->contains( "efiSystemPartitionSize" ) ? gs->value( "efiSystemPartitionSize" ).toString() : QString( "300MiB" ),
+                                QString( "0" ),
+                                QString( "0" ) }, true );
     }
 
     const bool mayCreateSwap
