@@ -158,6 +158,8 @@ public:
 
     void initLayout( const QVariantList& config = QVariantList() );
 
+    bool layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend = false );
+
     void layoutApply( Device* dev, qint64 firstSector, qint64 lastSector, QString luksPassphrase );
     void layoutApply( Device* dev,
                       qint64 firstSector,

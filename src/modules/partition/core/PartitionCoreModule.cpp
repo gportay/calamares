@@ -918,6 +918,12 @@ PartitionCoreModule::initLayout( const QVariantList& config )
     m_partLayout.init( config );
 }
 
+bool
+PartitionCoreModule::layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend )
+{
+    return m_partLayout.addEntry( entry , prepend );
+}
+
 void
 PartitionCoreModule::layoutApply( Device* dev,
                                   qint64 firstSector,
