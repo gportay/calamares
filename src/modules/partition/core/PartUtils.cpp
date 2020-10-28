@@ -473,20 +473,14 @@ isHomePartition( const Partition* candidate )
     cDebug() << Logger::SubEntry << "label" << candidate->label();
     cDebug() << Logger::SubEntry << "attributes" << candidate->attributes();
 
-    const PartitionNode* root = candidate;
-    while ( root && !root->isRoot() )
-    {
-        root = root->parent();
-        cDebug() << Logger::SubEntry << "moved towards root" << (void*)root;
-    }
+    const PartitionTable* table = CalamaresUtils::Partition::getPartitionTable( candidate );
 
-    // Strange case: no root found, no partition table node?
-    if ( !root )
+    // Strange case: no partition table node?
+    if ( !table )
     {
         return false;
     }
 
-    const PartitionTable* table = dynamic_cast< const PartitionTable* >( root );
     cDebug() << Logger::SubEntry << "partition table" << (void*)table << "type"
              << ( table ? table->type() : PartitionTable::TableType::unknownTableType );
     return table && ( table->type() == PartitionTable::TableType::gpt ) && candidate->type().compare("933AC7E1-2EB4-4F13-B844-0E14E2AEF915", Qt::CaseInsensitive ) == 0;
