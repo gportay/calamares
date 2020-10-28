@@ -99,6 +99,14 @@ public:
      */
     qint64 toBytes() const;
 
+    /** @brief Convert the size to string.
+     *
+     * This method returns a human readable string.
+     *
+     * @return  the size in human readable string.
+     */
+    QString toString() const;
+
     /** @brief Are the units comparable?
      *
      * None units cannot be compared with anything. Percentages can
@@ -115,5 +123,8 @@ public:
 
 }  // namespace Partition
 }  // namespace CalamaresUtils
+
+class QDebug;
+QDebug& operator<<( QDebug&, const CalamaresUtils::Partition::PartitionSize& );
 
 #endif  // PARTITION_PARTITIONSIZE_H

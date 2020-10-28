@@ -921,6 +921,16 @@ PartitionCoreModule::initLayout( const QVariantList& config )
 bool
 PartitionCoreModule::layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend )
 {
+qWarning() << __func__ << __LINE__ << "ENTRY" << (void*)&entry;
+qWarning() << __func__ << __LINE__ << "label" << entry.partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << entry.partUUID;
+qWarning() << __func__ << __LINE__ << "type" << entry.partType;
+qWarning() << __func__ << __LINE__ << "attributes" << entry.partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << entry.partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << entry.partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << entry.partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << entry.partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << entry.partMaxSize;
     return m_partLayout.addEntry( entry , prepend );
 }
 

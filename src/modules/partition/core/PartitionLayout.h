@@ -63,6 +63,8 @@ public:
         /// @brief Copy PartitionEntry
         PartitionEntry( const PartitionEntry& e );
 
+        PartitionEntry& operator=( const PartitionEntry& other );
+
         bool isValid() const
         {
             if ( !partSize.isValid()

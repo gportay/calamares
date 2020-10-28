@@ -61,6 +61,16 @@ PartitionLayout::~PartitionLayout() {}
 PartitionLayout::PartitionEntry::PartitionEntry()
     : partAttributes( 0 )
 {
+qWarning() << __func__ << __LINE__ << "DEFAULT CONSTRUCTOR";
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
 }
 
 PartitionLayout::PartitionEntry::PartitionEntry( const QString& mountPoint, const QString& size, const QString& minSize, const QString& maxSize )
@@ -70,6 +80,16 @@ PartitionLayout::PartitionEntry::PartitionEntry( const QString& mountPoint, cons
     , partMinSize( minSize )
     , partMaxSize( maxSize )
 {
+qWarning() << __func__ << __LINE__ << "CONSTRUCTOR WITH FEW ATTRIBUTES";
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
 }
 
 PartitionLayout::PartitionEntry::PartitionEntry( const QString& label,
@@ -93,6 +113,16 @@ PartitionLayout::PartitionEntry::PartitionEntry( const QString& label,
     , partMaxSize( maxSize )
 {
     PartUtils::findFS( fs, &partFileSystem );
+qWarning() << __func__ << __LINE__ << "CONSTRUCTOR WITH ALL ATTRIBUTES";
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
 }
 
 PartitionLayout::PartitionEntry::PartitionEntry( const PartitionEntry& e )
@@ -107,8 +137,56 @@ PartitionLayout::PartitionEntry::PartitionEntry( const PartitionEntry& e )
     , partMinSize( e.partMinSize )
     , partMaxSize( e.partMaxSize )
 {
+qWarning() << __func__ << __LINE__ << "COPY CONSTRUCTOR";
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
 }
 
+PartitionLayout::PartitionEntry&
+PartitionLayout::PartitionEntry::operator=( const PartitionLayout::PartitionEntry& other )
+{
+qWarning() << __func__ << __LINE__ << "OPERATOR =";
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
+    if ( this != &other )
+    {
+        partLabel = other.partLabel;
+        partUUID = other.partUUID;
+        partType = other.partType;
+        partAttributes = other.partAttributes;
+        partMountPoint = other.partMountPoint;
+        partFileSystem = other.partFileSystem;
+        partFeatures = other.partFeatures;
+        partSize = other.partSize;
+        partMinSize = other.partMinSize;
+        partMaxSize = other.partMaxSize;
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
+    }
+
+    return *this;
+}
 
 bool
 PartitionLayout::addEntry( const PartitionEntry& entry, bool prepend )
@@ -118,6 +196,16 @@ PartitionLayout::addEntry( const PartitionEntry& entry, bool prepend )
         return false;
     }
 
+qWarning() << __func__ << __LINE__ << "ENTRY" << (void*)&entry;
+qWarning() << __func__ << __LINE__ << "label" << entry.partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << entry.partUUID;
+qWarning() << __func__ << __LINE__ << "type" << entry.partType;
+qWarning() << __func__ << __LINE__ << "attributes" << entry.partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << entry.partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << entry.partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << entry.partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << entry.partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << entry.partMaxSize;
     if ( prepend )
     {
         m_partLayout.prepend( entry );

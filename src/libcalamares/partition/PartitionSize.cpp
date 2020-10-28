@@ -288,5 +288,32 @@ PartitionSize::operator==( const PartitionSize& other ) const
     __builtin_unreachable();
 }
 
+QString
+PartitionSize::toString() const
+{
+    switch ( m_unit )
+    {
+    case CalamaresUtils::Partition::SizeUnit::None:
+        return QString("none");
+    case CalamaresUtils::Partition::SizeUnit::Percent:
+        return QString::number(m_value) + QString("%");
+    case CalamaresUtils::Partition::SizeUnit::Byte:
+    case CalamaresUtils::Partition::SizeUnit::KB:
+    case CalamaresUtils::Partition::SizeUnit::KiB:
+    case CalamaresUtils::Partition::SizeUnit::MB:
+    case CalamaresUtils::Partition::SizeUnit::MiB:
+    case CalamaresUtils::Partition::SizeUnit::GB:
+    case CalamaresUtils::Partition::SizeUnit::GiB:
+        return QString::number(toBytes()) + QString("Bytes");
+    }
+    __builtin_unreachable();
+}
+
 }  // namespace Partition
 }  // namespace CalamaresUtils
+
+QDebug&
+operator<<( QDebug& s, const CalamaresUtils::Partition::PartitionSize& p)
+{
+    return s << p.toString();
+}
