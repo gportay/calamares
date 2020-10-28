@@ -27,6 +27,27 @@ namespace Partition
 using ::Device;
 using ::Partition;
 
+static const QMap< const QString, const QString > gptTypes =
+{
+    { QString("C12A7328-F81F-11D2-BA4B-00A0C93EC93B"), QString("EFI System") },
+    { QString("4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709"), QString("Linux root (x86-64)") },
+    { QString("933AC7E1-2EB4-4F13-B844-0E14E2AEF915"), QString("Linux home") },
+    { QString("BC13C2FF-59E6-4262-A352-B275FD6F7172"), QString("Linux extended boot") },
+    { QString("3B8F8425-20E0-4F3B-907F-1A25A76F98E8"), QString("Linux server data") },
+    { QString("4D21B016-B534-45C2-A9FB-5C16E091FD2D"), QString("Linux variable data") },
+    { QString("7EC6F557-3BC5-4ACA-B293-16EF5DF639D1"), QString("Linux temporary data") },
+}
+
+const QString& getType( Partition* partition )
+{
+    if ( getPartitionTable( m_partition )->type() == PartitionTable::TableType::gpt )
+    {
+	 gptTypes.find( partitions->type );
+    }
+
+    return partition.type();
+}
+
 const PartitionTable*
 getPartitionTable( const Partition* partition )
 {
