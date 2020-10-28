@@ -41,14 +41,14 @@ getPartitionTable( const Partition* partition )
 
 
 bool
-isPartitionFreeSpace( Partition* partition )
+isPartitionFreeSpace( const Partition* partition )
 {
     return partition->roles().has( PartitionRole::Unallocated );
 }
 
 
 bool
-isPartitionNew( Partition* partition )
+isPartitionNew( const Partition* partition )
 {
 #if defined( WITH_KPMCORE4API )
     constexpr auto NewState = Partition::State::New;
