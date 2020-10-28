@@ -39,14 +39,14 @@ using ::PartitionTable;
 const PartitionTable* getPartitionTable( const Partition* partition );
 
 /** @brief Is this a free-space area? */
-bool isPartitionFreeSpace( Partition* );
+bool isPartitionFreeSpace( const Partition* );
 
 /** @brief Is this partition newly-to-be-created?
  *
  * Returns true if the partition is planned to be created by the installer as
  * opposed to already existing on the disk.
  */
-bool isPartitionNew( Partition* );
+bool isPartitionNew( const Partition* );
 
 /**
  * Iterates on all devices and return the first partition which is (already)
