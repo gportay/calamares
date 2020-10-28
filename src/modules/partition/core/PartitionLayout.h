@@ -83,7 +83,11 @@ public:
     ~PartitionLayout();
 
     void init( const QVariantList& config );
+#if 0
     bool addEntry( const PartitionEntry& entry, bool prepend = false );
+#else
+    bool addEntry( PartitionEntry&& entry, bool prepend = false );
+#endif
 
     /**
      * @brief Apply the current partition layout to the selected drive space.

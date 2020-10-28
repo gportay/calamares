@@ -161,6 +161,7 @@ public:
 #if 0
     bool layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend = false );
 #else
+#if 0
     bool layoutAddEntry( const QString& label,
                          const QString& uuid,
                          const QString& type,
@@ -172,6 +173,12 @@ public:
                          const QString& minSize,
                          const QString& maxSize,
                          bool prepend = false );
+#else
+    bool layoutAddEntry( PartitionLayout::PartitionEntry&& entry, bool prepend = false )//;
+    {
+        return m_partLayout.addEntry( entry , prepend );
+    }
+#endif
 #endif
 
     void layoutApply( Device* dev, qint64 firstSector, qint64 lastSector, QString luksPassphrase );

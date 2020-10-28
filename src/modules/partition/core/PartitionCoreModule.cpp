@@ -935,6 +935,7 @@ qWarning() << __func__ << __LINE__ << "maxSize" << entry.partMaxSize;
     return m_partLayout.addEntry( entry , prepend );
 }
 #else
+#if 0
 bool
 PartitionCoreModule::layoutAddEntry( const QString& label,
                                      const QString& uuid,
@@ -950,6 +951,12 @@ PartitionCoreModule::layoutAddEntry( const QString& label,
 {
     return m_partLayout.addEntry( { label, uuid, type, attributes, mountPoint, fs, features, size, minSize, maxSize }, prepend );
 }
+#else
+PartitionCoreModule::layoutAddEntry( PartitionLayout::PartitionEntry&& entry, bool prepend )
+{
+    return m_partLayout.addEntry( entry , prepend );
+}
+#endif
 #endif
 
 void

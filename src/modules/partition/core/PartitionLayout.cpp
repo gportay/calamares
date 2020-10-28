@@ -212,6 +212,8 @@ qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
 qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
 }
 
+
+#if 0
 bool
 PartitionLayout::addEntry( const PartitionEntry& entry, bool prepend )
 {
@@ -241,6 +243,27 @@ qWarning() << __func__ << __LINE__ << "maxSize" << entry.partMaxSize;
 
     return true;
 }
+#else
+bool
+PartitionLayout::addEntry( PartitionEntry&& entry, bool prepend )
+{
+    if ( !entry.isValid() )
+    {
+        return false;
+    }
+
+    if ( prepend )
+    {
+        m_partLayout.prepend( entry );
+    }
+    else
+    {
+        m_partLayout.append( entry );
+    }
+
+    return true;
+}
+#endif
 
 void
 PartitionLayout::init( const QVariantList& config )
