@@ -113,16 +113,17 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
 
     if ( isEfi )
     {
-        core->layoutAddEntry( { gs->contains( "efiSystemPartitionName" ) ? gs->value( "efiSystemPartitionName" ).toString() : QString( "efi" ),
-                                QString( "" ),
-                                QString( "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ),
-                                0,
-                                gs->contains( "efiSystemPartition" ) ? gs->value( "efiSystemPartition" ).toString() : QString( "/boot/efi" ),
-                                QString( "FAT32" ),
-                                { },
-                                gs->contains( "efiSystemPartitionSize" ) ? gs->value( "efiSystemPartitionSize" ).toString() : QString( "300MiB" ),
-                                QString( "0" ),
-                                QString( "0" ) }, true );
+        core->layoutAddEntry( gs->contains( "efiSystemPartitionName" ) ? gs->value( "efiSystemPartitionName" ).toString() : QString( "efi" ),
+                              QString( "" ),
+                              QString( "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ),
+                              0,
+                              gs->contains( "efiSystemPartition" ) ? gs->value( "efiSystemPartition" ).toString() : QString( "/boot/efi" ),
+                              QString( "FAT32" ),
+                              { },
+                              gs->contains( "efiSystemPartitionSize" ) ? gs->value( "efiSystemPartitionSize" ).toString() : QString( "300MiB" ),
+                              QString( "0" ),
+                              QString( "0" ),
+                              false );
     }
 
     const bool mayCreateSwap
@@ -145,16 +146,16 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
 
     if ( shouldCreateSwap )
     {
-        core->layoutAddEntry( { gs->contains( "swapPartitionName" ) ? gs->value( "swapPartitionName" ).toString() : QString( "swap" ),
-                                QString( "" ),
-                                QString( "0657fd6d-a4ab-43c4-84e5-0933c84b4f4f" ),
-                                0,
-                                QString( "" ),
-                                QString( "linuxswap" ),
-                                { },
-                                QString::number( suggestedSwapSizeB ),
-                                QString( "0" ),
-                                QString( "0" ) );
+        core->layoutAddEntry( gs->contains( "swapPartitionName" ) ? gs->value( "swapPartitionName" ).toString() : QString( "efi" ),
+                              QString( "" ),
+                              QString( "0657fd6d-a4ab-43c4-84e5-0933c84b4f4f" ),
+                              0,
+                              QString( "" ),
+                              QString( "linuxswap" ),
+                              { },
+                              QString::number( suggestedSwapSizeB ),
+                              QString( "0" ),
+                              QString( "0" ) );
     }
 
     core->layoutApply( dev, firstFreeSector, dev->totalLogical() - 1, o.luksPassphrase );

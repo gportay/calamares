@@ -918,6 +918,7 @@ PartitionCoreModule::initLayout( const QVariantList& config )
     m_partLayout.init( config );
 }
 
+#if 0
 bool
 PartitionCoreModule::layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend )
 {
@@ -933,6 +934,23 @@ qWarning() << __func__ << __LINE__ << "minSize" << entry.partMinSize;
 qWarning() << __func__ << __LINE__ << "maxSize" << entry.partMaxSize;
     return m_partLayout.addEntry( entry , prepend );
 }
+#else
+bool
+PartitionCoreModule::layoutAddEntry( const QString& label,
+                                     const QString& uuid,
+                                     const QString& type,
+                                     quint64 attributes,
+                                     const QString& mountPoint,
+                                     const QString& fs,
+                                     const QVariantMap& features,
+                                     const QString& size,
+                                     const QString& minSize,
+                                     const QString& maxSize,
+                                     bool prepend )
+{
+    return m_partLayout.addEntry( { label, uuid, type, attributes, mountPoint, fs, features, size, minSize, maxSize }, prepend );
+}
+#endif
 
 void
 PartitionCoreModule::layoutApply( Device* dev,

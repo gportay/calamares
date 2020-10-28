@@ -158,7 +158,21 @@ public:
 
     void initLayout( const QVariantList& config = QVariantList() );
 
+#if 0
     bool layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend = false );
+#else
+    bool layoutAddEntry( const QString& label,
+                         const QString& uuid,
+                         const QString& type,
+                         quint64 attributes,
+                         const QString& mountPoint,
+                         const QString& fs,
+                         const QVariantMap& features,
+                         const QString& size,
+                         const QString& minSize,
+                         const QString& maxSize,
+                         bool prepend = false );
+#endif
 
     void layoutApply( Device* dev, qint64 firstSector, qint64 lastSector, QString luksPassphrase );
     void layoutApply( Device* dev,
