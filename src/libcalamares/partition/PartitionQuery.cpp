@@ -81,11 +81,15 @@ findPartitionByPath( const QList< Device* >& devices, const QString& path )
     }
 
     for ( auto device : devices )
+    {
         for ( auto it = PartitionIterator::begin( device ); it != PartitionIterator::end( device ); ++it )
+        {
             if ( ( *it )->partitionPath() == path.simplified() )
             {
                 return *it;
             }
+        }
+    }
     return nullptr;
 }
 
@@ -95,11 +99,15 @@ findPartitions( const QList< Device* >& devices, std::function< bool( Partition*
 {
     QList< Partition* > results;
     for ( auto device : devices )
+    {
         for ( auto it = PartitionIterator::begin( device ); it != PartitionIterator::end( device ); ++it )
+        {
             if ( criterionFunction( *it ) )
             {
                 results.append( *it );
             }
+        }
+    }
     return results;
 }
 
