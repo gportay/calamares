@@ -62,6 +62,8 @@ public:
                         const QString& maxSize = QString() );
         /// @brief Copy PartitionEntry
         PartitionEntry( const PartitionEntry& e );
+        /// @brief Move PartitionEntry
+        PartitionEntry( PartitionEntry&& e );
 
         PartitionEntry& operator=( const PartitionEntry& other );
 

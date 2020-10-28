@@ -188,6 +188,30 @@ qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
     return *this;
 }
 
+PartitionLayout::PartitionEntry::PartitionEntry( PartitionEntry&& e )
+    : partLabel( e.partLabel )
+    , partUUID( e.partUUID )
+    , partType( e.partType )
+    , partAttributes( e.partAttributes )
+    , partMountPoint( e.partMountPoint )
+    , partFileSystem( e.partFileSystem )
+    , partFeatures( e.partFeatures )
+    , partSize( e.partSize )
+    , partMinSize( e.partMinSize )
+    , partMaxSize( e.partMaxSize )
+{
+qWarning() << __func__ << __LINE__ << "MOVE CONSTRUCTOR";
+qWarning() << __func__ << __LINE__ << "label" << partLabel;
+qWarning() << __func__ << __LINE__ << "uuid" << partUUID;
+qWarning() << __func__ << __LINE__ << "type" << partType;
+qWarning() << __func__ << __LINE__ << "attributes" << partAttributes;
+qWarning() << __func__ << __LINE__ << "mountPoint" << partMountPoint;
+qWarning() << __func__ << __LINE__ << "partFileSystem" << partFileSystem;
+qWarning() << __func__ << __LINE__ << "size" << partSize;
+qWarning() << __func__ << __LINE__ << "minSize" << partMinSize;
+qWarning() << __func__ << __LINE__ << "maxSize" << partMaxSize;
+}
+
 bool
 PartitionLayout::addEntry( const PartitionEntry& entry, bool prepend )
 {
