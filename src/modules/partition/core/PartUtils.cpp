@@ -451,20 +451,14 @@ isEfiBootable( const Partition* candidate )
     }
 
     /* Otherwise, if it's a GPT table, Boot (bit 0) is the same as Esp */
-    const PartitionNode* root = candidate;
-    while ( root && !root->isRoot() )
-    {
-        root = root->parent();
-        cDebug() << Logger::SubEntry << "moved towards root" << Logger::Pointer( root );
-    }
+    const PartitionTable* table = CalamaresUtils::Partition::getPartitionTable( candidate );
 
-    // Strange case: no root found, no partition table node?
-    if ( !root )
+    // Strange case: no partition table node?
+    if ( !table )
     {
         return false;
     }
 
-    const PartitionTable* table = dynamic_cast< const PartitionTable* >( root );
     cDebug() << Logger::SubEntry << "partition table" << Logger::Pointer( table ) << "type"
              << ( table ? table->type() : PartitionTable::TableType::unknownTableType );
     return table && ( table->type() == PartitionTable::TableType::gpt ) && flags.testFlag( KPM_PARTITION_FLAG( Boot ) );

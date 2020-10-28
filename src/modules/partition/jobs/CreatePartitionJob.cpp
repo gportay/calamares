@@ -12,6 +12,7 @@
 #include "CreatePartitionJob.h"
 
 #include "partition/FileSystem.h"
+#include "partition/PartitionQuery.h"
 #include "utils/Logger.h"
 #include "utils/Units.h"
 
@@ -35,6 +36,17 @@ CreatePartitionJob::CreatePartitionJob( Device* device, Partition* partition )
 QString
 CreatePartitionJob::prettyName() const
 {
+    if ( CalamaresUtils::Partition::getPartitionTable( m_partition )->type() == PartitionTable::TableType::gpt )
+    {
+        return tr( "Create new %2MiB partition on %4 (%3) with file system %1 (%5, %6)." )
+                   .arg( userVisibleFS( m_partition->fileSystem() ) )
+                   .arg( CalamaresUtils::BytesToMiB( m_partition->capacity() ) )
+                   .arg( m_device->name() )
+                   .arg( m_device->deviceNode() )
+                   .arg( m_partition->type() )
+                   .arg( QString::number( m_partition->attributes() ) );
+    }
+
     return tr( "Create new %2MiB partition on %4 (%3) with file system %1." )
         .arg( userVisibleFS( m_partition->fileSystem() ) )
         .arg( CalamaresUtils::BytesToMiB( m_partition->capacity() ) )
@@ -46,6 +58,18 @@ CreatePartitionJob::prettyName() const
 QString
 CreatePartitionJob::prettyDescription() const
 {
+    if ( CalamaresUtils::Partition::getPartitionTable( m_partition )->type() == PartitionTable::TableType::gpt )
+    {
+        return tr( "Create new <strong>%2MiB</strong> partition on <strong>%4</strong> "
+                   "(%3) with file system <strong>%1</strong> (%5, %6)." )
+                   .arg( userVisibleFS( m_partition->fileSystem() ) )
+                   .arg( CalamaresUtils::BytesToMiB( m_partition->capacity() ) )
+                   .arg( m_device->name() )
+                   .arg( m_device->deviceNode() )
+                   .arg( m_partition->type() )
+                   .arg( QString::number( m_partition->attributes() ) );
+    }
+
     return tr( "Create new <strong>%2MiB</strong> partition on <strong>%4</strong> "
                "(%3) with file system <strong>%1</strong>." )
         .arg( userVisibleFS( m_partition->fileSystem() ) )
