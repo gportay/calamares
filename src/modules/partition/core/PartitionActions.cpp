@@ -143,48 +143,21 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
         shouldCreateSwap = availableSpaceB > requiredSpaceB;
     }
 
-    qint64 lastSectorForRoot = dev->totalLogical() - 1;  //last sector of the device
     if ( shouldCreateSwap )
     {
-        lastSectorForRoot -= suggestedSwapSizeB / dev->logicalSize() + 1;
+        core->layoutAddEntry( { gs->contains( "swapPartitionName" ) ? gs->value( "swapPartitionName" ).toString() : QString( "swap" ),
+                                QString( "" ),
+                                QString( "0657fd6d-a4ab-43c4-84e5-0933c84b4f4f" ),
+                                0,
+                                QString( "" ),
+                                QString( "linuxswap" ),
+                                { },
+                                QString::number( suggestedSwapSizeB ),
+                                QString( "0" ),
+                                QString( "0" ) );
     }
 
-    core->layoutApply( dev, firstFreeSector, lastSectorForRoot, o.luksPassphrase );
-
-    if ( shouldCreateSwap )
-    {
-        Partition* swapPartition = nullptr;
-        if ( o.luksPassphrase.isEmpty() )
-        {
-            swapPartition = KPMHelpers::createNewPartition( dev->partitionTable(),
-                                                            *dev,
-                                                            PartitionRole( PartitionRole::Primary ),
-                                                            FileSystem::LinuxSwap,
-                                                            lastSectorForRoot + 1,
-                                                            dev->totalLogical() - 1,
-                                                            KPM_PARTITION_FLAG( None ) );
-        }
-        else
-        {
-            swapPartition = KPMHelpers::createNewEncryptedPartition( dev->partitionTable(),
-                                                                     *dev,
-                                                                     PartitionRole( PartitionRole::Primary ),
-                                                                     FileSystem::LinuxSwap,
-                                                                     lastSectorForRoot + 1,
-                                                                     dev->totalLogical() - 1,
-                                                                     o.luksPassphrase,
-                                                                     KPM_PARTITION_FLAG( None ) );
-        }
-        PartitionInfo::setFormat( swapPartition, true );
-        if ( gs->contains( "swapPartitionName" ))
-        {
-            swapPartition->setLabel( gs->value( "swapPartitionName" ).toString() );
-        }
-#if defined( WITH_KPMCORE42API )
-        swapPartition->setType( "0657fd6d-a4ab-43c4-84e5-0933c84b4f4f" );
-#endif
-        core->createPartition( dev, swapPartition );
-    }
+    core->layoutApply( dev, firstFreeSector, dev->totalLogical() - 1, o.luksPassphrase );
 
     core->dumpQueue();
 }
