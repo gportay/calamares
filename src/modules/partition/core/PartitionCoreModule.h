@@ -175,6 +175,8 @@ public:
 
     bool layoutAddSwapEntry( qint64 size, bool prepend = false );
 
+    bool layoutAddHomeEntry( bool prepend = false );
+
     void layoutApply( Device* dev, qint64 firstSector, qint64 lastSector, QString luksPassphrase );
     void layoutApply( Device* dev,
                       qint64 firstSector,

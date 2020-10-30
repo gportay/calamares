@@ -142,6 +142,11 @@ doAutopartition( PartitionCoreModule* core, Device* dev, Choices::AutoPartitionO
         core->layoutAddSwapEntry( suggestedSwapSizeB );
     }
 
+    if ( !gs->value( "reuseHome" ).toBool() )
+    {
+        core->layoutAddHomeEntry();
+    }
+
     core->layoutApply( dev, firstFreeSector, dev->totalLogical() - 1, o.luksPassphrase );
 
     core->dumpQueue();
@@ -186,6 +191,11 @@ doReplacePartition( PartitionCoreModule* core, Device* dev, Partition* partition
     Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
 
     core->layoutInit( gs->value( "defaultFileSystemType" ).toString() );
+
+    if ( !gs->value( "reuseHome" ).toBool() )
+    {
+        core->layoutAddHomeEntry();
+    }
 
     core->layoutApply( dev, firstSector, lastSector, o.luksPassphrase );
 

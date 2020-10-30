@@ -987,6 +987,51 @@ PartitionCoreModule::layoutAddSwapEntry( qint64 size, bool prepend )
                            prepend );
 }
 
+bool
+PartitionCoreModule::layoutAddHomeEntry( bool prepend )
+{
+    Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
+
+    QString name = QString( "home" );
+    if ( gs->contains( "homePartitionName" ) )
+    {
+        name = gs->value( "homePartitionName" ).toString();
+    }
+
+    QString mountPoint = QString( "/home" );
+    if ( gs->contains( "homePartition" ) )
+    {
+        mountPoint = gs->value( "homePartition" ).toString();
+    }
+
+    QString fileSystemType = gs->value( "defaultFileSystemType" ).toString();
+    if ( gs->contains( "homePartitionFileSystemType" ) )
+    {
+        fileSystemType = gs->value( "homePartitionFileSystemType" ).toString();
+    }
+
+    if ( FileSystem::typeForName( fileSystemType ) == FileSystem::Unknown )
+    {
+        fileSystemType = QString( "ext4" );
+    }
+
+    QVariantMap features;
+    if ( gs->contains( "homePartitionFileSystemFeatures" ) )
+    {
+        features = gs->value( "homePartitionFileSystemFeatures" ).toMap();
+    }
+
+    QString size = QString( "100%" );
+    if ( gs->contains( "homePartitionSize" ) )
+    {
+        size = gs->value( "homePartitionSize" ).toString();
+    }
+
+    return layoutAddEntry( { name, QString( "" ), QString( "933ac7e1-2eb4-4f13-b844-0e14e2aef915" ), 0,
+                             mountPoint, fileSystemType, features, size, QString( "0" ), QString( "0" ) },
+                           prepend );
+}
+
 void
 PartitionCoreModule::layoutApply( Device* dev,
                                   qint64 firstSector,

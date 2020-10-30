@@ -766,12 +766,14 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
                     int homeIndex = m_homePartitionComboBox->currentIndex();
                     if ( m_homePartitionCheckBox->isChecked() && homeIndex != -1 )
                     {
-                        PartitionInfo::setMountPoint( m_core->homePartitions().at( homeIndex ), "/home" );
+                        PartitionInfo::setMountPoint( m_core->homePartitions().at( homeIndex ),
+                                                      gs->value( "homePartition" ).toString() );
                         gs->insert( "reuseHome", true );
                     }
                     else
                     {
                         gs->insert( "reuseHome", false );
+                        m_core->layoutAddHomeEntry();
                     }
 
                     m_core->layoutApply( selectedDevice(),
@@ -801,7 +803,8 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
                         int homeIndex = m_homePartitionComboBox->currentIndex();
                         if ( m_homePartitionCheckBox->isChecked() && homeIndex != -1 )
                         {
-                            PartitionInfo::setMountPoint( m_core->homePartitions().at( homeIndex ), "/home" );
+                            PartitionInfo::setMountPoint( m_core->homePartitions().at( homeIndex ),
+                                                          gs->value( "homePartition" ).toString() );
                             gs->insert( "reuseHome", true );
                         }
                         else
