@@ -602,8 +602,7 @@ PartitionViewStep::setConfigurationMap( const QVariantMap& configurationMap )
     QFuture< void > future = QtConcurrent::run( this, &PartitionViewStep::initPartitionCoreModule );
     m_future->setFuture( future );
 
-    m_core->initLayout( fsType == FileSystem::Unknown ? FileSystem::Ext4 : fsType,
-                        configurationMap.value( "partitionLayout" ).toList() );
+    m_core->setLayout( configurationMap.value( "partitionLayout" ).toList() );
 }
 
 

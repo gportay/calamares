@@ -44,13 +44,9 @@ public:
 
         /// @brief All-zeroes PartitionEntry
         PartitionEntry();
-        /** @brief Parse @p mountPoint, @p size, @p minSize and @p maxSize to their respective member variables
-         *
-         * Sets a specific FS type (not parsed from string like the other
-         * constructor).
-         */
-        PartitionEntry( FileSystem::Type fs,
-                        const QString& mountPoint,
+        /// @brief Parse @p mountPoint, %p fileSystem, @p size, @p minSize and @p maxSize to their respective member variables
+        PartitionEntry( const QString& mountPoint,
+                        const QString& fileSystem,
                         const QString& size,
                         const QString& minSize = QString(),
                         const QString& maxSize = QString() );
@@ -83,13 +79,20 @@ public:
     PartitionLayout( const PartitionLayout& layout );
     ~PartitionLayout();
 
-    /** @brief create the configuration from @p config
+    /** @brief Set the partition layout.
      *
-     * @p config is a list of partition entries (in QVariant form,
-     * read from YAML). If no entries are given, then a single
+     * @p list is a list of partition entries (in QVariant form,
+     * read from YAML).
+     */
+    void setList( const QVariantList& list );
+
+    /** @brief Initialize the current partition layout.
+     *
+     * Uses entries given thanks to setList(). If no entries, then a single
      * partition is created with the given @p defaultFsType
      */
-    void init( FileSystem::Type defaultFsType, const QVariantList& config );
+    void init( const QString& defaultFsType );
+
     bool addEntry( const PartitionEntry& entry, bool prepend = false );
 
     /**
@@ -104,6 +107,7 @@ public:
                                           const PartitionRole& role );
 
 private:
+    QVariantList m_list;
     QList< PartitionEntry > m_partLayout;
 };
 

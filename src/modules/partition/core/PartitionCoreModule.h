@@ -157,11 +157,17 @@ public:
     /// @brief Set the path where the bootloader will be installed
     void setBootLoaderInstallPath( const QString& path );
 
+    /** @brief Set the default layout that will be initialized 
+     *
+     * See PartitionLayout::setLayout
+     */
+    void setLayout( const QVariantList& list = QVariantList() );
+
     /** @brief Initialize the default layout that will be applied
      *
      * See PartitionLayout::init()
      */
-    void initLayout( FileSystem::Type defaultFsType, const QVariantList& config = QVariantList() );
+    void layoutInit( const QString& defaultFileSystemType );
 
     bool layoutAddEntry( const PartitionLayout::PartitionEntry& entry, bool prepend = false );
 

@@ -761,6 +761,8 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
 
                     Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
 
+                    m_core->layoutInit( gs->value( "defaultFileSystemType" ).toString() );
+
                     int homeIndex = m_homePartitionComboBox->currentIndex();
                     if ( m_homePartitionCheckBox->isChecked() && homeIndex != -1 )
                     {
