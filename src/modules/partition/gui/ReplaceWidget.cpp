@@ -31,10 +31,12 @@
 
 using CalamaresUtils::Partition::untranslatedFS;
 using CalamaresUtils::Partition::userVisibleFS;
+using HomeChoice = Config::HomeChoice;
 
-ReplaceWidget::ReplaceWidget( PartitionCoreModule* core, QComboBox* devicesComboBox, QWidget* parent )
+ReplaceWidget::ReplaceWidget( Config* config, PartitionCoreModule* core, QComboBox* devicesComboBox, QWidget* parent )
     : QWidget( parent )
     , m_ui( new Ui_ReplaceWidget )
+    , m_config( config )
     , m_core( core )
     , m_isEfi( false )
 {
@@ -89,8 +91,8 @@ ReplaceWidget::applyChanges()
                                                   partition,
                                                   { gs->value( "defaultPartitionTableType" ).toString(),
                                                     gs->value( "defaultFileSystemType" ).toString(),
-                                                    QString() } );
-
+                                                    QString(),
+                                                    m_config->homeChoice() } );
             if ( m_isEfi )
             {
                 QList< Partition* > efiSystemPartitions = m_core->efiSystemPartitions();

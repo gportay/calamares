@@ -61,6 +61,7 @@ using CalamaresUtils::Partition::isPartitionFreeSpace;
 using CalamaresUtils::Partition::PartitionIterator;
 using InstallChoice = Config::InstallChoice;
 using SwapChoice = Config::SwapChoice;
+using HomeChoice = Config::HomeChoice;
 
 /**
  * @brief ChoicePage::ChoicePage is the default constructor. Called on startup as part of
@@ -79,6 +80,7 @@ ChoicePage::ChoicePage( Config* config, QWidget* parent )
     , m_replaceButton( nullptr )
     , m_somethingElseButton( nullptr )
     , m_eraseSwapChoiceComboBox( nullptr )
+    , m_xxxxxHomeChoiceComboBox( nullptr )
     , m_deviceInfoWidget( nullptr )
     , m_beforePartitionBarsView( nullptr )
     , m_beforePartitionLabelsView( nullptr )
@@ -188,6 +190,34 @@ createCombo( const QSet< SwapChoice >& s, SwapChoice dflt )
     return box;
 }
 
+
+/** @brief Creates a combobox with the given home choices in it.
+ *
+ * Pre-selects the choice given by @p dflt.
+ * No texts are set -- that happens later by the translator functions.
+ */
+static inline QComboBox*
+createHomeChoiceComboBox( const QSet< HomeChoice >& s, HomeChoice dflt )
+{
+    QComboBox* box = new QComboBox;
+    for ( HomeChoice c : { HomeChoice::NoHome,
+                           HomeChoice::ReuseHome,
+                           HomeChoice::CreateHome } )
+        if ( s.contains( c ) )
+        {
+            box->addItem( QString(), c );
+        }
+
+    int dfltIndex = box->findData( dflt );
+    if ( dfltIndex >= 0 )
+    {
+        box->setCurrentIndex( dfltIndex );
+    }
+
+    return box;
+}
+
+
 /**
  * @brief ChoicePage::setupChoices creates PrettyRadioButton objects for the action
  *      choices.
@@ -244,6 +274,12 @@ ChoicePage::setupChoices()
         m_eraseButton->addOptionsComboBox( m_eraseSwapChoiceComboBox );
     }
 
+    if ( m_config->homeChoices().count() > 1 )
+    {
+        m_xxxxxHomeChoiceComboBox = createHomeChoiceComboBox( m_config->homeChoices(), m_config->homeChoice() );
+        m_eraseButton->addOptionsComboBox( m_xxxxxHomeChoiceComboBox );
+    }
+
     m_itemsLayout->addWidget( m_alongsideButton );
     m_itemsLayout->addWidget( m_replaceButton );
     m_itemsLayout->addWidget( m_eraseButton );
@@ -293,6 +329,11 @@ ChoicePage::setupChoices()
                  QOverload< int >::of( &QComboBox::currentIndexChanged ),
                  this,
                  &ChoicePage::onEraseSwapChoiceChanged );
+    if ( m_xxxxxHomeChoiceComboBox )
+        connect( m_xxxxxHomeChoiceComboBox,
+                 QOverload< int >::of( &QComboBox::currentIndexChanged ),
+                 this,
+                 &ChoicePage::onXxxxxHomeChoiceChanged );
 
     CALAMARES_RETRANSLATE( m_somethingElseButton->setText( tr( "<strong>Manual partitioning</strong><br/>"
                                                                "You can create or resize partitions yourself." ) );
@@ -427,6 +468,16 @@ ChoicePage::onEraseSwapChoiceChanged()
 }
 
 void
+ChoicePage::onXxxxxHomeChoiceChanged()
+{
+    if ( m_xxxxxHomeChoiceComboBox )
+    {
+        m_config->setHomeChoice( m_xxxxxHomeChoiceComboBox->currentData().toInt() );
+        onActionChanged();
+    }
+}
+
+void
 ChoicePage::applyActionChoice( InstallChoice choice )
 {
     cDebug() << "Prev" << m_lastSelectedActionIndex << "InstallChoice" << choice
@@ -447,7 +498,8 @@ ChoicePage::applyActionChoice( InstallChoice choice )
                                                                   gs->value( "efiSystemPartition" ).toString(),
                                                                   CalamaresUtils::GiBtoBytes(
                                                                       gs->value( "requiredStorageGiB" ).toDouble() ),
-                                                                  m_config->swapChoice() };
+                                                                  m_config->swapChoice(),
+                                                                  m_config->homeChoice() };
 
         if ( m_core->isDirty() )
         {
@@ -798,8 +850,8 @@ ChoicePage::doReplaceSelectedPartition( const QModelIndex& current )
                                                               selectedPartition,
                                                               { gs->value( "defaultPartitionType" ).toString(),
                                                                 gs->value( "defaultFileSystemType" ).toString(),
-                                                                m_encryptWidget->passphrase() } );
-
+                                                                m_encryptWidget->passphrase(),
+                                                                m_config->homeChoice() } );
                         int homeIndex = m_homePartitionComboBox->currentIndex();
                         if ( m_homePartitionCheckBox->isChecked() && homeIndex != -1 )
                         {
@@ -1102,8 +1154,9 @@ ChoicePage::updateActionChoicePreview( InstallChoice choice )
         efiLayout->addStretch();
     }
 
-    if ( m_config->installChoice() == InstallChoice::Alongside
-         || m_config->installChoice() == InstallChoice::Replace )
+    if ( m_config->homeChoice() == HomeChoice::ReuseHome
+         && ( m_config->installChoice() == InstallChoice::Alongside
+              || m_config->installChoice() == InstallChoice::Replace ) )
     {
         QHBoxLayout* homePartitionLayout = new QHBoxLayout;
         layout->addLayout( homePartitionLayout );

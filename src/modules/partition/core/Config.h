@@ -24,6 +24,9 @@ class Config : public QObject
     ///@brief The swap choice (None, Small, Hibernate, ...) which only makes sense when Erase is chosen
     Q_PROPERTY( SwapChoice swapChoice READ swapChoice WRITE setSwapChoice NOTIFY swapChoiceChanged )
 
+    ///@brief The home choice (None, Reuse, Create)
+    Q_PROPERTY( HomeChoice homeChoice READ homeChoice WRITE setHomeChoice NOTIFY homeChoiceChanged )
+
     Q_PROPERTY( bool allowManualPartitioning READ allowManualPartitioning CONSTANT FINAL )
 
 public:
@@ -53,6 +56,17 @@ public:
     Q_ENUM( SwapChoice )
     static const NamedEnumTable< SwapChoice >& swapChoiceNames();
     using SwapChoiceSet = QSet< SwapChoice >;
+
+    /** @brief Choice of home */
+    enum HomeChoice
+    {
+        NoHome,  // don't create any home, don't use any
+        ReuseHome,  // don't create, but do use existing
+        CreateHome  // create home
+    };
+    Q_ENUM( HomeChoice )
+    static const NamedEnumTable< HomeChoice >& homeChoiceNames();
+    using HomeChoiceSet = QSet< HomeChoice >;
 
     void setConfigurationMap( const QVariantMap& );
     void updateGlobalStorage() const;
@@ -94,6 +108,26 @@ public:
      */
     SwapChoice swapChoice() const { return m_swapChoice; }
 
+    /** @brief The set of home choices enabled for this install
+     *
+     * This method returns a set (hopefully non-empty) of configured home choices.
+     */
+    HomeChoiceSet homeChoices() const { return m_homeChoices; }
+
+    /** @brief What kind of home selection is requested **initially**?
+     *
+     * @return The home choice (may be @c NoHome )
+     */
+    HomeChoice initialHomeChoice() const { return m_initialHomeChoice; }
+
+    /** @brief What kind of home selection is requested **now**?
+     *
+     * A choice of home only makes sense when install choice Erase is made.
+     *
+     * @return The home choice (may be @c NoHome).
+     */
+    HomeChoice homeChoice() const { return m_homeChoice; }
+
     ///@brief Is manual partitioning allowed (not explicitly disnabled in the config file)?
     bool allowManualPartitioning() const;
 
@@ -102,15 +136,21 @@ public Q_SLOTS:
     void setInstallChoice( InstallChoice );
     void setSwapChoice( int );  ///< Translates a button ID or so to SwapChoice
     void setSwapChoice( SwapChoice );
+    void setHomeChoice( int );  ///< Translates a button ID or so to HomeChoice
+    void setHomeChoice( HomeChoice );
 
 Q_SIGNALS:
     void installChoiceChanged( InstallChoice );
     void swapChoiceChanged( SwapChoice );
+    void homeChoiceChanged( HomeChoice );
 
 private:
     SwapChoiceSet m_swapChoices;
     SwapChoice m_initialSwapChoice = NoSwap;
     SwapChoice m_swapChoice = NoSwap;
+    HomeChoiceSet m_homeChoices;
+    HomeChoice m_initialHomeChoice = NoHome;
+    HomeChoice m_homeChoice = NoHome;
     InstallChoice m_initialInstallChoice = NoChoice;
     InstallChoice m_installChoice = NoChoice;
     qreal m_requiredStorageGiB = 0.0;  // May duplicate setting in the welcome module
@@ -125,5 +165,13 @@ private:
  */
 Config::SwapChoice pickOne( const Config::SwapChoiceSet& s );
 
+
+/** @brief Given a set of home choices, return a sensible value from it.
+ *
+ * "Sensible" here means: if there is one value, use it; otherwise, use
+ * NoHme if there are no choices, or if NoHome is one of the choices, in the set.
+ * If that's not possible, any value from the set.
+ */
+Config::HomeChoice pickOne( const Config::HomeChoiceSet& h );
 
 #endif

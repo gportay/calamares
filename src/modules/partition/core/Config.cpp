@@ -150,8 +150,66 @@ getSwapChoices( const QVariantMap& configurationMap )
     return choices;
 }
 
+const NamedEnumTable< Config::HomeChoice >&
+Config::homeChoiceNames()
+{
+    static const NamedEnumTable< HomeChoice > names { { QStringLiteral( "none" ), HomeChoice::NoHome },
+                                                      { QStringLiteral( "reuse" ), HomeChoice::ReuseHome },
+                                                      { QStringLiteral( "create" ), HomeChoice::CreateHome } };
+
+    return names;
+}
+
+Config::HomeChoice
+pickOne( const Config::HomeChoiceSet& s )
+{
+    if ( s.count() == 0 )
+    {
+        return Config::HomeChoice::NoHome;
+    }
+    if ( s.count() == 1 )
+    {
+        return *( s.begin() );
+    }
+    if ( s.contains( Config::HomeChoice::NoHome ) )
+    {
+        return Config::HomeChoice::NoHome;
+    }
+    // Here, count > 1 but NoHome is not a member.
+    return *( s.begin() );
+}
+
+
+static Config::HomeChoiceSet
+getHomeChoices( const QVariantMap& configurationMap )
+{
+    Config::HomeChoiceSet choices;  // Available home choices
+    if ( configurationMap.contains( "userHomeChoices" ) )
+    {
+        QStringList l = configurationMap[ "userHomeChoices" ].toStringList();
+
+        for ( const auto& item : l )
+        {
+            bool ok = false;
+            auto v = Config::homeChoiceNames().find( item, ok );
+            if ( ok )
+            {
+                choices.insert( v );
+            }
+        }
+
+        if ( choices.isEmpty() )
+        {
+            cWarning() << "Partition-module configuration for *userHomeChoices* is empty:" << l;
+            choices.insert( Config::HomeChoice::NoHome );
+        }
+    }
+
+    return choices;
+}
+
 void
-updateGlobalStorage( Config::InstallChoice installChoice, Config::SwapChoice swapChoice )
+updateGlobalStorage( Config::InstallChoice installChoice, Config::SwapChoice swapChoice, Config::HomeChoice homeChoice )
 {
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
     if ( gs )
@@ -159,6 +217,7 @@ updateGlobalStorage( Config::InstallChoice installChoice, Config::SwapChoice swa
         QVariantMap m;
         m.insert( "install", Config::installChoiceNames().find( installChoice ) );
         m.insert( "swap", Config::swapChoiceNames().find( swapChoice ) );
+        m.insert( "home", Config::homeChoiceNames().find( homeChoice ) );
         gs->insert( "partitionChoices", m );
     }
 }
@@ -181,7 +240,7 @@ Config::setInstallChoice( InstallChoice c )
     {
         m_installChoice = c;
         emit installChoiceChanged( c );
-        ::updateGlobalStorage( c, m_swapChoice );
+        ::updateGlobalStorage( c, m_swapChoice, m_homeChoice );
     }
 }
 
@@ -203,7 +262,29 @@ Config::setSwapChoice( Config::SwapChoice c )
     {
         m_swapChoice = c;
         emit swapChoiceChanged( c );
-        ::updateGlobalStorage( m_installChoice, c );
+        ::updateGlobalStorage( m_installChoice, c, m_homeChoice );
+    }
+}
+
+void
+Config::setHomeChoice( int c )
+{
+    if ( ( c < HomeChoice::NoHome ) || ( c > HomeChoice::CreateHome ) )
+    {
+        cWarning() << "Invalid home choice (int)" << c;
+        c = HomeChoice::NoHome;
+    }
+    setHomeChoice( static_cast< HomeChoice >( c ) );
+}
+
+void
+Config::setHomeChoice( Config::HomeChoice c )
+{
+    if ( c != m_homeChoice )
+    {
+        m_homeChoice = c;
+        emit homeChoiceChanged( c );
+        ::updateGlobalStorage( m_installChoice, m_swapChoice, c );
     }
 }
 
@@ -221,6 +302,7 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     // Settings that overlap with the Welcome module
     m_requiredStorageGiB = CalamaresUtils::getDouble( configurationMap, "requiredStorage", -1.0 );
     m_swapChoices = getSwapChoices( configurationMap );
+    m_homeChoices = getHomeChoices( configurationMap );
 
     bool nameFound = false;  // In the name table (ignored, falls back to first entry in table)
     m_initialInstallChoice = installChoiceNames().find(
@@ -235,6 +317,15 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
         m_initialSwapChoice = pickOne( m_swapChoices );
     }
     setSwapChoice( m_initialSwapChoice );
+
+    m_initialHomeChoice
+        = homeChoiceNames().find( CalamaresUtils::getString( configurationMap, "initialHomeChoice" ), nameFound );
+    if ( !m_homeChoices.contains( m_initialHomeChoice ) )
+    {
+        cWarning() << "Configuration for *initialHomeChoice* is not one of the *userHomeChoices*";
+        m_initialHomeChoice = pickOne( m_homeChoices );
+    }
+    setHomeChoice( m_initialHomeChoice );
 
     Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
     gs->insert( "allowManualPartitioning",

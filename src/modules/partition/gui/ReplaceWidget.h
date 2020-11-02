@@ -19,6 +19,7 @@
 
 class Ui_ReplaceWidget;
 class QComboBox;
+class Config;
 class PartitionCoreModule;
 class Partition;
 
@@ -26,7 +27,7 @@ class ReplaceWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ReplaceWidget( PartitionCoreModule* core, QComboBox* devicesComboBox, QWidget* parent = nullptr );
+    explicit ReplaceWidget( Config* config, PartitionCoreModule* core, QComboBox* devicesComboBox, QWidget* parent = nullptr );
     virtual ~ReplaceWidget() override;
 
     bool isNextEnabled() const;
@@ -47,6 +48,7 @@ private:
 
     void updateStatus( CalamaresUtils::ImageType imageType, const QString& text );
 
+    Config* m_config;
     PartitionCoreModule* m_core;
 
     bool m_nextEnabled;

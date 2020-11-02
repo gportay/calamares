@@ -103,6 +103,8 @@ private slots:
     void onActionChanged();
     /// @brief Calls onActionChanged() as needed.
     void onEraseSwapChoiceChanged();
+    /// @brief Calls onActionChanged() as needed.
+    void onXxxxxHomeChoiceChanged();
 
 private:
     bool calculateNextEnabled() const;
@@ -143,6 +145,7 @@ private:
     Calamares::PrettyRadioButton* m_replaceButton;
     Calamares::PrettyRadioButton* m_somethingElseButton;
     QComboBox* m_eraseSwapChoiceComboBox;  // UI, see also m_eraseSwapChoice
+    QComboBox* m_xxxxxHomeChoiceComboBox;  // UI, see also m_xxxxxHomeChoice
 
     DeviceInfoWidget* m_deviceInfoWidget;
 

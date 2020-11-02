@@ -32,11 +32,16 @@ struct ReplacePartitionOptions
     QString defaultPartitionTableType;  // e.g. "gpt" or "msdos"
     QString defaultFsType;  // e.g. "ext4" or "btrfs"
     QString luksPassphrase;  // optional
+    Config::HomeChoice home;
 
-    ReplacePartitionOptions( const QString& pt, const QString& fs, const QString& luks )
+    ReplacePartitionOptions( const QString& pt,
+                             const QString& fs,
+                             const QString& luks,
+                             Config::HomeChoice home )
         : defaultPartitionTableType( pt )
         , defaultFsType( fs )
         , luksPassphrase( luks )
+        , home( home )
     {
     }
 };
@@ -52,8 +57,9 @@ struct AutoPartitionOptions : ReplacePartitionOptions
                           const QString& luks,
                           const QString& efi,
                           qint64 requiredBytes,
-                          Config::SwapChoice s )
-        : ReplacePartitionOptions( pt, fs, luks )
+                          Config::SwapChoice s,
+                          Config::HomeChoice h )
+        : ReplacePartitionOptions( pt, fs, luks, h )
         , efiPartitionMountPoint( efi )
         , requiredSpaceB( requiredBytes > 0 ? static_cast< quint64 >( requiredBytes ) : 0 )
         , swap( s )
